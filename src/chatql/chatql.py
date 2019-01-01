@@ -23,7 +23,7 @@ class Response(graphene.ObjectType):
 class Query(graphene.ObjectType):
     """Query Type."""
 
-    response = graphene.Field(Response, request=graphene.NonNull(graphene.String))
+    response = graphene.Field(Response, request=graphene.String(required=True))
 
     def resolve_response(self, info, request=None):
         """Request param resolver."""
