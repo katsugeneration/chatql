@@ -1,2 +1,2 @@
-# chatql
+# ChatQL
 GraphQL based chat engine
