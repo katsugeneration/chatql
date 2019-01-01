@@ -1,7 +1,7 @@
 # coding=utf-8
 #
 # Licensed under the MIT License
-"""GraphQL schame define."""
+"""GraphQL schema define."""
 import graphene
 
 
