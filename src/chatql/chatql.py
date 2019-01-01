@@ -15,6 +15,7 @@ class Response(graphene.ObjectType):
     """System Response Type."""
 
     id = graphene.ID()
+    user = graphene.Field(User)
     request = graphene.String(description='User input request')
     text = graphene.String(description='System response string')
 
@@ -27,12 +28,15 @@ class Response(graphene.ObjectType):
 class Query(graphene.ObjectType):
     """Query Type."""
 
-    response = graphene.Field(Response, request=graphene.String(required=True))
+    response = graphene.Field(
+                    Response,
+                    request=graphene.String(required=True),
+                    user=graphene.ID())
     user = graphene.Field(User, id=graphene.ID(required=True))
 
-    def resolve_response(self, info, request=None):
+    def resolve_response(self, info, request=None, user=None):
         """Request param resolver."""
-        return Response(request=request)
+        return Response(request=request, user=User(id=user))
 
     def resolve_user(self, info, id=None):
         """User param resolver."""
