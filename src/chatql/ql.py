@@ -6,20 +6,28 @@ import graphene
 
 
 class Response(graphene.ObjectType):
+    """System Response Type."""
+
     id = graphene.ID()
-    text = graphene.String(description='system response string')
+    request = graphene.String(description='User input request')
+    text = graphene.String(description='System response string')
 
     def resolve_text(self, info):
-        return 'hello!'
+        """Text param resolver."""
+        if self.request == 'hello':
+            return 'hello!'
+        else:
+            return 'what\'s?'
 
 
 class Query(graphene.ObjectType):
     """Query Type."""
-    response = graphene.Field(Response)
 
-    def resolve_response(self, info):
-        """Hello param."""
-        return Response()
+    response = graphene.Field(Response, request=graphene.NonNull(graphene.String))
+
+    def resolve_response(self, info, request=None):
+        """Request param resolver."""
+        return Response(request=request)
 
 
 schema = graphene.Schema(query=Query)

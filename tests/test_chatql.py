@@ -3,8 +3,9 @@
 # Licensed under the MIT License
 """GraphQL accessor test code."""
 import chatql
+from graphql import GraphQLError
 from chatql import __version__
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 
 def test_version():
@@ -12,7 +13,46 @@ def test_version():
 
 
 class TestQL:
-    def test_query_hello(self):
+    def test_response_hello(self):
+        query = '''
+            query getResponse {
+                response(request: "hello") {
+                    id
+                    text
+                }
+            }
+        '''
+        result = chatql.schema.execute(query)
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'hello!')
+
+    def test_response_no_hello(self):
+        query = '''
+            query getResponse {
+                response(request: "OK!") {
+                    id
+                    text
+                }
+            }
+        '''
+        result = chatql.schema.execute(query)
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'what\'s?')
+
+    def test_response_hello_with_variables(self):
+        query = '''
+            query getResponse($request: String!) {
+                response(request: $request) {
+                    id
+                    text
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, variables={'request': 'hello'})
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'hello!')
+
+    def test_response_hello_without_argument(self):
         query = '''
             query getResponse {
                 response {
@@ -22,5 +62,4 @@ class TestQL:
             }
         '''
         result = chatql.schema.execute(query)
-        eq_(result.errors, None)
-        eq_(result.data['response']['text'], 'hello!')
+        ok_(isinstance(result.errors[0], GraphQLError))
