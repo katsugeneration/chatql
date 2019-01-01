@@ -5,14 +5,21 @@
 import graphene
 
 
+class Response(graphene.ObjectType):
+    id = graphene.ID()
+    text = graphene.String(description='system response string')
+
+    def resolve_text(self, info):
+        return 'hello!'
+
+
 class Query(graphene.ObjectType):
     """Query Type."""
+    response = graphene.Field(Response)
 
-    hello = graphene.String(description='A typical hello world')
-
-    def resolve_hello(self, info):
+    def resolve_response(self, info):
         """Hello param."""
-        return 'World'
+        return Response()
 
 
 schema = graphene.Schema(query=Query)
