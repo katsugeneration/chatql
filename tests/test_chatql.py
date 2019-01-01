@@ -19,6 +19,9 @@ class DummyDataAccessor:
         else:
             return 'what\'s?'
 
+    def get_new_user_id(self):
+        return "111"
+
 
 class TestQL:
     def test_response_hello(self):
@@ -71,3 +74,30 @@ class TestQL:
         '''
         result = chatql.schema.execute(query)
         ok_(isinstance(result.errors[0], GraphQLError))
+
+    def test_create_user(self):
+        query = '''
+            mutation createUser {
+                createUser {
+                    user {
+                        id
+                    }
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={"data_accessor": DummyDataAccessor()})
+        eq_(result.errors, None)
+        eq_(result.data['createUser']['user']['id'], "111")
+
+    def test_get_user(self):
+        query = '''
+            query getUser($id: ID!) {
+                user(id: $id) {
+                    id
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={"data_accessor": DummyDataAccessor()}, variables={'id': '222'})
+        eq_(result.errors, None)
+        eq_(result.data['user']['id'], "222")
+
