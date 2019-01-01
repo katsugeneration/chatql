@@ -12,6 +12,14 @@ def test_version():
     assert __version__ == '0.1.0'
 
 
+class DummyDataAccessor:
+    def get_response_text(self, request):
+        if request == 'hello':
+            return 'hello!'
+        else:
+            return 'what\'s?'
+
+
 class TestQL:
     def test_response_hello(self):
         query = '''
@@ -22,7 +30,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query)
+        result = chatql.schema.execute(query, context={"data_accessor": DummyDataAccessor()})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'hello!')
 
@@ -35,7 +43,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query)
+        result = chatql.schema.execute(query, context={"data_accessor": DummyDataAccessor()})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'what\'s?')
 
@@ -48,7 +56,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, variables={'request': 'hello'})
+        result = chatql.schema.execute(query, context={"data_accessor": DummyDataAccessor()}, variables={'request': 'hello'})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'hello!')
 

@@ -14,10 +14,8 @@ class Response(graphene.ObjectType):
 
     def resolve_text(self, info):
         """Text param resolver."""
-        if self.request == 'hello':
-            return 'hello!'
-        else:
-            return 'what\'s?'
+        data_accessor = info.context['data_accessor']
+        return data_accessor.get_response_text(self.request)
 
 
 class Query(graphene.ObjectType):
