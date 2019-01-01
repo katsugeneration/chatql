@@ -1,7 +1,7 @@
 # coding=utf-8
 #
 # Licensed under the MIT License
-"""GraphQL accessor."""
+"""GraphQL schame define."""
 import graphene
 
 
