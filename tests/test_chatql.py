@@ -13,11 +13,15 @@ def test_version():
 
 
 class DummyDataAccessor:
-    def get_response_text(self, request):
+    def get_response_text(self, request, **kwargs):
         if request == 'hello':
             return 'hello!'
         else:
-            return 'what\'s?'
+            user_id = kwargs.get("user_id", None)
+            if user_id == '333':
+                return "OK!"
+            else:
+                return 'what\'s?'
 
     def get_new_user_id(self):
         return "111"
@@ -117,3 +121,20 @@ class TestQL:
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'hello!')
         eq_(result.data['response']['user']['id'], '222')
+
+    def test_response_hello_with_specific_user(self):
+        query = '''
+            query getResponse($request: String!, $user: ID) {
+                response(request: $request, user: $user) {
+                    id
+                    user {
+                        id
+                    }
+                    text
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={"data_accessor": DummyDataAccessor()}, variables={'request': 'OK!', 'user': '333'})
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'OK!')
+        eq_(result.data['response']['user']['id'], '333')
