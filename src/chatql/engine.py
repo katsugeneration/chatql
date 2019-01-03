@@ -29,6 +29,7 @@ class DialogEngine(object):
             **self._client.locals)
 
         for s in self._client.scenarios:
-            if eval(s.conditions, local_values):
+            conditions = s.conditions.strip()
+            if eval(conditions, local_values):
                 return s.response
         return None

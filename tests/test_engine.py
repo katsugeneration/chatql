@@ -52,3 +52,23 @@ class TestEngine:
         engine = DialogEngine(client)
         text = engine.generate_response_text('', aaa='bbb')
         eq_(text, 'OK!')
+
+    def test_generate_response_with_line_code(self):
+        client = DummyDatabaseClient()
+        conditions="""True \
+            and True"""
+        client.scenarios = [DummyScenario(conditions=conditions, response='OK!')]
+        engine = DialogEngine(client)
+        text = engine.generate_response_text('')
+        eq_(text, 'OK!')
+
+    def test_generate_response_with_white_space(self):
+        client = DummyDatabaseClient()
+        conditions="""
+            True \
+            and True
+        """
+        client.scenarios = [DummyScenario(conditions=conditions, response='OK!')]
+        engine = DialogEngine(client)
+        text = engine.generate_response_text('')
+        eq_(text, 'OK!')
