@@ -15,14 +15,20 @@ class DialogEngine(object):
         """
         self._client = client
 
-    def generate_response_text(self, request, **kwargs):
+    def generate_response_text(self, request, user_id=None, **context):
         """Generate Response Text using DB and Intent Estimator.
 
         Args:
             request (str): user input text
-            user_id (str): user specified id
+            user_id (str): (Optional) user specified id
+            context (dict): other values for generating response
         """
+        local_values = dict(
+            {"request": request},
+            **context,
+            **self._client.locals)
+
         for s in self._client.scenarios:
-            if eval(s.conditions, globals(), self._client.locals):
+            if eval(s.conditions, local_values):
                 return s.response
         return None

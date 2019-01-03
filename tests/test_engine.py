@@ -38,3 +38,17 @@ class TestEngine:
         engine = DialogEngine(client)
         text = engine.generate_response_text('')
         eq_(text, 'OK!')
+
+    def test_generate_response_with_request(self):
+        client = DummyDatabaseClient()
+        client.scenarios = [DummyScenario(conditions='request == "aaa"', response='OK!')]
+        engine = DialogEngine(client)
+        text = engine.generate_response_text('aaa')
+        eq_(text, 'OK!')
+
+    def test_generate_response_with_other_value(self):
+        client = DummyDatabaseClient()
+        client.scenarios = [DummyScenario(conditions='aaa == "bbb"', response='OK!')]
+        engine = DialogEngine(client)
+        text = engine.generate_response_text('', aaa='bbb')
+        eq_(text, 'OK!')
