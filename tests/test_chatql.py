@@ -12,7 +12,7 @@ def test_version():
     assert __version__ == '0.1.0'
 
 
-class DummyDataAccessor:
+class DummyEngine:
     def generate_response_text(self, request, **kwargs):
         if request == 'hello':
             return 'hello!'
@@ -37,7 +37,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, context={"engine": DummyDataAccessor()})
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'hello!')
 
@@ -50,7 +50,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, context={"engine": DummyDataAccessor()})
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'what\'s?')
 
@@ -63,7 +63,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, context={"engine": DummyDataAccessor()}, variables={'request': 'hello'})
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()}, variables={'request': 'hello'})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'hello!')
 
@@ -89,7 +89,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, context={"engine": DummyDataAccessor()})
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()})
         eq_(result.errors, None)
         eq_(result.data['createUser']['user']['id'], "111")
 
@@ -101,7 +101,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, context={"engine": DummyDataAccessor()}, variables={'id': '222'})
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()}, variables={'id': '222'})
         eq_(result.errors, None)
         eq_(result.data['user']['id'], "222")
 
@@ -117,7 +117,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, context={"engine": DummyDataAccessor()}, variables={'request': 'hello', 'user': '222'})
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()}, variables={'request': 'hello', 'user': '222'})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'hello!')
         eq_(result.data['response']['user']['id'], '222')
@@ -134,7 +134,7 @@ class TestQL:
                 }
             }
         '''
-        result = chatql.schema.execute(query, context={"engine": DummyDataAccessor()}, variables={'request': 'OK!', 'user': '333'})
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()}, variables={'request': 'OK!', 'user': '333'})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'OK!')
         eq_(result.data['response']['user']['id'], '333')
