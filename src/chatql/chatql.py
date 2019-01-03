@@ -1,7 +1,7 @@
 # coding=utf-8
 #
 # Licensed under the MIT License
-"""GraphQL schema define."""
+"""GraphQL scheme define."""
 import graphene
 
 
@@ -21,8 +21,8 @@ class Response(graphene.ObjectType):
 
     def resolve_text(self, info):
         """Text param resolver."""
-        data_accessor = info.context['data_accessor']
-        return data_accessor.get_response_text(
+        engine = info.context['engine']
+        return engine.generate_response_text(
             self.request,
             user_id=self.user.id)
 
@@ -52,8 +52,8 @@ class CreateUser(graphene.Mutation):
 
     def mutate(self, info):
         """Mutate function."""
-        data_accessor = info.context['data_accessor']
-        id = data_accessor.get_new_user_id()
+        engine = info.context['engine']
+        id = engine.get_new_user_id()
         user = User(id=id)
         return CreateUser(user=user)
 
