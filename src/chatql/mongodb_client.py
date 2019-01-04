@@ -49,4 +49,5 @@ class MongoClient(object):
 
     def locals(self, user_id):
         return {
-            "history": History.objects(user_id=user_id)}
+            "history": History.objects(user_id=user_id),
+            "user": User.objects(id=user_id)}

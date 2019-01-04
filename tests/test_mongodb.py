@@ -106,7 +106,7 @@ class TestClient:
         u.save()
         h.save()
 
-    def test_client_locals(self):
+    def test_client_locals_history(self):
         History.objects().delete()
         User.objects().delete()
         u = User()
@@ -117,7 +117,7 @@ class TestClient:
         h.save()
         eq_(u.id, self.client.locals(u.id)["history"].only('user_id').first().user_id.id)
 
-    def test_client_locals_with_user_id(self):
+    def test_client_locals_history_with_user_id(self):
         History.objects().delete()
         User.objects().delete()
         u = User()
@@ -134,3 +134,18 @@ class TestClient:
         h.save()
         eq_(len(History.objects()), 2)
         eq_(len(self.client.locals(u.id)["history"]), 1)
+
+    def test_client_locals_user_with_user_id(self):
+        User.objects().delete()
+        u = User()
+        u.save()
+        eq_(u.id, self.client.locals(u.id)["user"].only('id').first().id)
+
+    def test_client_locals_user(self):
+        User.objects().delete()
+        u = User()
+        u.save()
+        u = User()
+        u.save()
+        eq_(len(User.objects()), 2)
+        eq_(len(self.client.locals(u.id)["user"]), 1)
