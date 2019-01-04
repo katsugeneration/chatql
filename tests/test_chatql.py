@@ -23,7 +23,7 @@ class DummyEngine:
             else:
                 return 'what\'s?'
 
-    def get_new_user_id(self):
+    def create_new_user(self):
         return "111"
 
 

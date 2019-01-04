@@ -53,7 +53,7 @@ class CreateUser(graphene.Mutation):
     def mutate(self, info):
         """Mutate function."""
         engine = info.context['engine']
-        id = engine.get_new_user_id()
+        id = engine.create_new_user()
         user = User(id=id)
         return CreateUser(user=user)
 
