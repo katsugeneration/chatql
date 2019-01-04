@@ -5,7 +5,28 @@
 from chatql.mongodb_client import MongoClient, Scenario, User, History
 import datetime
 import mongoengine
+import os
+import shutil
+import time
+import subprocess
 from nose.tools import eq_, ok_, raises
+
+
+dbpath = "mongodb"
+process = None
+
+
+def setup():
+    global process
+    if not os.path.exists(dbpath):
+        os.mkdir(dbpath)
+    process = subprocess.Popen("mongod --dbpath ./%s" % dbpath, shell=True)
+
+
+def teardown():
+    process.terminate()
+    time.sleep(1)
+    shutil.rmtree(dbpath)
 
 
 class TestClient:
