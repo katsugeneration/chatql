@@ -20,6 +20,14 @@ class Scenario(mongoengine.Document):
         self.modified_at = datetime.datetime.utcnow()
         return super().save(*args, **kwargs)
 
+    def to_dict(self):
+        """Return dictionary changed object."""
+        return {
+            "attributes": self.attributes,
+            "conditions": self.conditions,
+            "response": self.response
+        }
+
 
 class User(mongoengine.DynamicDocument):
     """User Class."""
@@ -63,6 +71,16 @@ class MongoClient(object):
         return u.id
 
     def save_history(self, request, scenario, user_id):
-        """Save System Response History."""
-        h = History(request=request, scenario=scenario, user_id=user_id)
+        """Save System Response History.
+        
+        Args:
+            request (str): user input request
+            scenario (Scenario or str): response scenario
+            user_id (id): user id. id must need to be user object id in db
+        """
+        if isinstance(scenario, Scenario):
+            s = scenario.to_dict()
+        else:
+            s = scenario
+        h = History(request=request, scenario=s, user_id=user_id)
         h.save()

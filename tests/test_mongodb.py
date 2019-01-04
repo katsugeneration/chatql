@@ -176,20 +176,19 @@ class TestClient:
 
     def test_save_history(self):
         History.objects().delete()
+        Scenario.objects().delete()
+        User.objects().delete()
         s = Scenario(response='bbb')
         u = User()
         s.save()
         u.save()
-        s_dict = {
-            'attributes': s.attributes,
-            'conditions': s.conditions,
-            'response': s.response,
-        }
-        self.client.save_history('aaa', s_dict, u.id)
+        self.client.save_history('aaa', s, u.id)
         eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
 
     def test_save_history_scenario_is_none(self):
         History.objects().delete()
+        Scenario.objects().delete()
+        User.objects().delete()
         u = User()
         u.save()
         self.client.save_history('aaa', None, u.id)
@@ -197,11 +196,28 @@ class TestClient:
 
     def test_save_history_user_is_none(self):
         History.objects().delete()
+        Scenario.objects().delete()
+        User.objects().delete()
         s = Scenario(response='bbb')
-        s_dict = {
-            'attributes': s.attributes,
-            'conditions': s.conditions,
-            'response': s.response,
-        }
-        self.client.save_history('aaa', s_dict, None)
+        self.client.save_history('aaa', s, None)
         eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
+
+    @raises(mongoengine.errors.ValidationError)
+    def test_save_history_scenario_is_not_allowed_type(self):
+        History.objects().delete()
+        Scenario.objects().delete()
+        User.objects().delete()
+        u = User()
+        u.save()
+        self.client.save_history('aaa', [], u.id)
+
+    def test_save_history_user_is_not_in_db(self):
+        History.objects().delete()
+        Scenario.objects().delete()
+        User.objects().delete()
+        s = Scenario(response='bbb')
+        u = User()
+        s.save()
+        self.client.save_history('aaa', s, u.id)
+        eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
+        eq_(None, History.objects(scenario__response='bbb').only('user_id').first().user_id)
