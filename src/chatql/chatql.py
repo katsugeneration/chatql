@@ -19,13 +19,6 @@ class Response(graphene.ObjectType):
     request = graphene.String(description='User input request')
     text = graphene.String(description='System response string')
 
-    def resolve_text(self, info):
-        """Text param resolver."""
-        engine = info.context['engine']
-        return engine.generate_response_text(
-            self.request,
-            user_id=self.user.id)
-
 
 class Query(graphene.ObjectType):
     """Query Type."""
@@ -38,7 +31,17 @@ class Query(graphene.ObjectType):
 
     def resolve_response(self, info, request=None, user=None):
         """Request param resolver."""
-        return Response(request=request, user=User(id=user))
+        engine = info.context['engine']
+        if user is None:
+            user = engine.create_new_user()
+        res_history = engine.generate_response_text(
+            request,
+            user_id=user)
+        return Response(
+            id=res_history.id,
+            request=request,
+            user=User(id=res_history.user_id.id),
+            text=res_history.scenario['response'])
 
     def resolve_user(self, info, id=None):
         """User param resolver."""

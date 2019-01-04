@@ -66,14 +66,17 @@ class TestIntegration:
 
     def test_basic_access_twice_user(self):
         query = '''
-            query getResponse {
-                response(request: "hello", user: "111111111111111111111111") {
+            query getResponse($user: ID) {
+                response(request: "hello", user: $user) {
                     id
                     text
+                    user {
+                        id
+                    }
                 }
             }
         '''
         result = chatql.schema.execute(query, context={'engine': engine})
-        result = chatql.schema.execute(query, context={'engine': engine})
+        result = chatql.schema.execute(query, context={'engine': engine}, variables={'user': result.data['response']['user']['id']})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'Hello! Again!')

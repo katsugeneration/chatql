@@ -9,6 +9,7 @@ from collections import namedtuple
 
 DummyScenario = namedtuple('DummyScenario', 'conditions response')
 DummyUser = namedtuple('DummyUser', 'id')
+DummyHistory = namedtuple('DummyHistory', 'id user_id scenario request')
 
 
 class DummyDatabaseClient(object):
@@ -25,6 +26,7 @@ class DummyDatabaseClient(object):
 
     def save_history(self, request, scenario, user_id):
         self._history.append((request, scenario, user_id))
+        return DummyHistory(id='', request=request, scenario=scenario, user_id=user_id)
 
 
 class TestEngine:
@@ -32,8 +34,8 @@ class TestEngine:
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='True', response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('')
-        eq_(text, 'OK!')
+        resposne = engine.generate_response_text('')
+        eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_check_save_history(self):
         client = DummyDatabaseClient()
@@ -57,38 +59,38 @@ class TestEngine:
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions="True", response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('')
-        eq_(text, 'OK!')
+        resposne = engine.generate_response_text('')
+        eq_(resposne.scenario.response, 'OK!')
         eq_(client._history[0][2], '1')
 
     def test_generate_response_wuthout_condition_is_true(self):
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='False', response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('')
-        ok_(text is None)
+        resposne = engine.generate_response_text('')
+        ok_(resposne.scenario is None)
 
     def test_generate_response_with_locals(self):
         client = DummyDatabaseClient()
         client._locals = {'a': 1}
         client.scenarios = [DummyScenario(conditions='a == 1', response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('')
-        eq_(text, 'OK!')
+        resposne = engine.generate_response_text('')
+        eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_with_request(self):
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='request == "aaa"', response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('aaa')
-        eq_(text, 'OK!')
+        resposne = engine.generate_response_text('aaa')
+        eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_with_other_value(self):
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='aaa == "bbb"', response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('', aaa='bbb')
-        eq_(text, 'OK!')
+        resposne = engine.generate_response_text('', aaa='bbb')
+        eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_with_line_code(self):
         client = DummyDatabaseClient()
@@ -96,8 +98,8 @@ class TestEngine:
             and True"""
         client.scenarios = [DummyScenario(conditions=conditions, response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('')
-        eq_(text, 'OK!')
+        resposne = engine.generate_response_text('')
+        eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_with_white_space(self):
         client = DummyDatabaseClient()
@@ -107,8 +109,8 @@ class TestEngine:
         """
         client.scenarios = [DummyScenario(conditions=conditions, response='OK!')]
         engine = DialogEngine(client)
-        text = engine.generate_response_text('')
-        eq_(text, 'OK!')
+        resposne = engine.generate_response_text('')
+        eq_(resposne.scenario.response, 'OK!')
 
     def test_create_new_user(self):
         client = DummyDatabaseClient()

@@ -36,10 +36,8 @@ class DialogEngine(object):
         for s in self._client.scenarios:
             conditions = s.conditions.strip()
             if eval(conditions, local_values):
-                self._client.save_history(request, s, user_id)
-                return s.response
-        self._client.save_history(request, None, user_id)
-        return None
+                return self._client.save_history(request, s, user_id)
+        return self._client.save_history(request, None, user_id)
 
     def create_new_user(self):
         """Create new user.

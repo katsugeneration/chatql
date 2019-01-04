@@ -6,6 +6,11 @@ import chatql
 from graphql import GraphQLError
 from chatql import __version__
 from nose.tools import eq_, ok_
+from collections import namedtuple
+
+
+DummyUser = namedtuple('DummyUser', 'id')
+DummyHistory = namedtuple('DummyHistory', 'id user_id scenario')
 
 
 def test_version():
@@ -14,14 +19,14 @@ def test_version():
 
 class DummyEngine:
     def generate_response_text(self, request, **kwargs):
+        user_id = kwargs.get("user_id", None)
         if request == 'hello':
-            return 'hello!'
+            return DummyHistory(id='111', user_id=DummyUser(id=user_id), scenario={"response": "hello!"})
         else:
-            user_id = kwargs.get("user_id", None)
             if user_id == '333':
-                return "OK!"
+                return DummyHistory(id='111', user_id=DummyUser(id=user_id), scenario={"response": "OK!"})
             else:
-                return 'what\'s?'
+                return DummyHistory(id='111', user_id=DummyUser(id=user_id), scenario={"response": "what\'s?"})
 
     def create_new_user(self):
         return "111"

@@ -88,6 +88,7 @@ class MongoClient(object):
             s = scenario
         h = History(request=request, scenario=s, user_id=user_id)
         h.save()
+        return h
 
     def import_scenario(self, path):
         """Import scenario data in DB.
