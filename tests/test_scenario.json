@@ -1,0 +1,16 @@
+[
+    {
+        "attributes": {
+            "id": "111"
+        },
+        "conditions": "history.objects(scenario__attributes__id='111').count() == 0",
+        "response": "Hello! Once!"
+    },
+    {
+        "attributes": {
+            "id": "112"
+        },
+        "conditions": "True",
+        "response": "Hello!"
+    }
+]

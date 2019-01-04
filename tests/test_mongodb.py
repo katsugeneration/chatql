@@ -221,3 +221,9 @@ class TestClient:
         self.client.save_history('aaa', s, u.id)
         eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
         eq_(None, History.objects(scenario__response='bbb').only('user_id').first().user_id)
+
+    def test_import_scenario(self):
+        Scenario.objects().delete()
+        self.client.import_scenario("tests/test_scenario.json")
+        eq_(2, Scenario.objects().count())
+        eq_("112", Scenario.objects()[1].attributes["id"])

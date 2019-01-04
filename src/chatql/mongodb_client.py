@@ -4,6 +4,7 @@
 """MongoDB client for ChatQL."""
 import mongoengine
 import datetime
+import json
 
 
 class Scenario(mongoengine.Document):
@@ -84,3 +85,27 @@ class MongoClient(object):
             s = scenario
         h = History(request=request, scenario=s, user_id=user_id)
         h.save()
+
+    def import_scenario(self, path):
+        """Import scenario data in DB.
+
+        Args:
+            path (str): scenario json data path
+        Note:
+            data json format is following.
+            [
+                {
+                    "attributes": {
+                        "attributes1": "attributes1 value",
+                        ...
+                    },
+                    "conditions": "condition string",
+                    "response": "response string"
+                },
+                ....
+            ]
+        """
+        with open(path, 'r') as f:
+            data = json.load(f)
+
+        Scenario.objects().insert([Scenario(**d) for d in data])
