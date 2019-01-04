@@ -42,8 +42,11 @@ class MongoClient(object):
     def __init__(self):
         """Mongoclient Constructor."""
         mongoengine.connect('chatql')
-        self.locals = {"history": History}
 
     @property
     def scenarios(self):
         return Scenario.objects()
+
+    def locals(self, user_id):
+        return {
+            "history": History.objects(user_id=user_id)}

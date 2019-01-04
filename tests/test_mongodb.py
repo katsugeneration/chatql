@@ -107,4 +107,30 @@ class TestClient:
         h.save()
 
     def test_client_locals(self):
-        eq_(History, self.client.locals["history"])
+        History.objects().delete()
+        User.objects().delete()
+        u = User()
+        h = History()
+        h.user_id = u
+        h.scenario = {"response": "aaa"}
+        u.save()
+        h.save()
+        eq_(u.id, self.client.locals(u.id)["history"].only('user_id').first().user_id.id)
+
+    def test_client_locals_with_user_id(self):
+        History.objects().delete()
+        User.objects().delete()
+        u = User()
+        h = History()
+        h.user_id = u
+        h.scenario = {"response": "aaa"}
+        u.save()
+        h.save()
+        u = User()
+        h = History()
+        h.user_id = u
+        h.scenario = {"response": "aaa"}
+        u.save()
+        h.save()
+        eq_(len(History.objects()), 2)
+        eq_(len(self.client.locals(u.id)["history"]), 1)

@@ -26,7 +26,7 @@ class DialogEngine(object):
         local_values = dict(
             {"request": request},
             **context,
-            **self._client.locals)
+            **self._client.locals(user_id))
 
         for s in self._client.scenarios:
             conditions = s.conditions.strip()

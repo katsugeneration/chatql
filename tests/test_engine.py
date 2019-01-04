@@ -12,8 +12,11 @@ DummyScenario = namedtuple('DummyScenario', 'conditions response')
 
 class DummyDatabaseClient(object):
     def __init__(self):
-        self.locals = {}
+        self._locals = {}
         self.scenarios = []
+
+    def locals(self, user_id):
+        return self._locals
 
 
 class TestEngine:
@@ -33,7 +36,7 @@ class TestEngine:
 
     def test_generate_response_with_locals(self):
         client = DummyDatabaseClient()
-        client.locals = {'a': 1}
+        client._locals = {'a': 1}
         client.scenarios = [DummyScenario(conditions='a == 1', response='OK!')]
         engine = DialogEngine(client)
         text = engine.generate_response_text('')
