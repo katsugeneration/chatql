@@ -55,9 +55,11 @@ class MongoClient(object):
 
     @property
     def scenarios(self):
+        """Return All Scenario Objects."""
         return Scenario.objects()
 
     def locals(self, user_id):
+        """Return user usage objects."""
         return {
             "history": History.objects(user_id=user_id),
             "user": User.objects(id=user_id)}
@@ -74,7 +76,7 @@ class MongoClient(object):
 
     def save_history(self, request, scenario, user_id):
         """Save System Response History.
-        
+
         Args:
             request (str): user input request
             scenario (Scenario or str): response scenario
