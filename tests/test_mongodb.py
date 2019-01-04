@@ -33,14 +33,17 @@ class TestClient:
     def setup(self):
         self.client = MongoClient(**{"db": "chatql", "port": 27018})
 
-    def test_add_scenario(self):
+    def teardown(self):
         Scenario.objects().delete()
+        User.objects().delete()
+        History.objects().delete()
+
+    def test_add_scenario(self):
         s = Scenario()
         s.save()
         eq_(s.id, Scenario.objects().only('id').first().id)
 
     def test_add_scenario_check_created_at(self):
-        Scenario.objects().delete()
         s = Scenario()
         s.save()
         utc = datetime.datetime.utcnow()
@@ -48,7 +51,6 @@ class TestClient:
         ok_(utc >= s.modified_at >= utc - datetime.timedelta(seconds=1))
 
     def test_add_scenario_update_modified(self):
-        Scenario.objects().delete()
         s = Scenario()
         s.save()
         utc = datetime.datetime.utcnow()
@@ -61,34 +63,28 @@ class TestClient:
         ok_(utc_modified >= s.modified_at >= utc_modified - datetime.timedelta(seconds=1))
 
     def test_add_scenario_attributes(self):
-        Scenario.objects().delete()
         s = Scenario(attributes={'id': '111'})
         s.save()
         eq_(s.id, Scenario.objects(attributes__id='111').only('id').first().id)
 
     def test_add_scenario_check_client_property(self):
-        Scenario.objects().delete()
         eq_(len(self.client.scenarios), 0)
         s = Scenario()
         s.save()
         eq_(len(self.client.scenarios), 1)
 
     def test_add_user(self):
-        User.objects().delete()
         u = User()
         u.save()
         eq_(u.id, User.objects().only('id').first().id)
 
     def test_add_user_add_any_attributes(self):
-        User.objects().delete()
         u = User()
         u.favotire = 'sports'
         u.save()
         eq_(u.id, User.objects(favotire='sports').only('id').first().id)
 
     def test_add_history(self):
-        History.objects().delete()
-        User.objects().delete()
         u = User()
         h = History()
         h.user_id = u
@@ -98,8 +94,6 @@ class TestClient:
         eq_(h.id, History.objects().only('id').first().id)
 
     def test_add_history_check_created_at(self):
-        History.objects().delete()
-        User.objects().delete()
         u = User()
         h = History()
         h.user_id = u
@@ -110,15 +104,11 @@ class TestClient:
         ok_(utc >= h.created_at >= utc - datetime.timedelta(seconds=1))
 
     def test_add_history_no_user(self):
-        History.objects().delete()
-        User.objects().delete()
         h = History()
         h.scenario = {"response": "aaa"}
         h.save()
 
     def test_add_history_no_scenario(self):
-        History.objects().delete()
-        User.objects().delete()
         u = User()
         h = History()
         h.user_id = u
@@ -126,8 +116,6 @@ class TestClient:
         h.save()
 
     def test_client_locals_history(self):
-        History.objects().delete()
-        User.objects().delete()
         u = User()
         h = History()
         h.user_id = u
@@ -137,8 +125,6 @@ class TestClient:
         eq_(u.id, self.client.locals(u.id)["history"].only('user_id').first().user_id.id)
 
     def test_client_locals_history_with_user_id(self):
-        History.objects().delete()
-        User.objects().delete()
         u = User()
         h = History()
         h.user_id = u
@@ -155,13 +141,11 @@ class TestClient:
         eq_(len(self.client.locals(u.id)["history"]), 1)
 
     def test_client_locals_user_with_user_id(self):
-        User.objects().delete()
         u = User()
         u.save()
         eq_(u.id, self.client.locals(u.id)["user"].only('id').first().id)
 
     def test_client_locals_user(self):
-        User.objects().delete()
         u = User()
         u.save()
         u = User()
@@ -170,14 +154,10 @@ class TestClient:
         eq_(len(self.client.locals(u.id)["user"]), 1)
 
     def test_create_new_user(self):
-        User.objects().delete()
         u = self.client.create_new_user()
         eq_(u.id, User.objects().only('id').first().id)
 
     def test_save_history(self):
-        History.objects().delete()
-        Scenario.objects().delete()
-        User.objects().delete()
         s = Scenario(response='bbb')
         u = User()
         s.save()
@@ -186,35 +166,23 @@ class TestClient:
         eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
 
     def test_save_history_scenario_is_none(self):
-        History.objects().delete()
-        Scenario.objects().delete()
-        User.objects().delete()
         u = User()
         u.save()
         self.client.save_history('aaa', None, u.id)
         eq_(None, History.objects(scenario__response='bbb').only('request').first())
 
     def test_save_history_user_is_none(self):
-        History.objects().delete()
-        Scenario.objects().delete()
-        User.objects().delete()
         s = Scenario(response='bbb')
         self.client.save_history('aaa', s, None)
         eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
 
     @raises(mongoengine.errors.ValidationError)
     def test_save_history_scenario_is_not_allowed_type(self):
-        History.objects().delete()
-        Scenario.objects().delete()
-        User.objects().delete()
         u = User()
         u.save()
         self.client.save_history('aaa', [], u.id)
 
     def test_save_history_user_is_not_in_db(self):
-        History.objects().delete()
-        Scenario.objects().delete()
-        User.objects().delete()
         s = Scenario(response='bbb')
         u = User()
         s.save()
@@ -223,7 +191,6 @@ class TestClient:
         eq_(None, History.objects(scenario__response='bbb').only('user_id').first().user_id)
 
     def test_import_scenario(self):
-        Scenario.objects().delete()
         self.client.import_scenario("tests/test_scenario.json")
         eq_(2, Scenario.objects().count())
         eq_("112", Scenario.objects()[1].attributes["id"])
