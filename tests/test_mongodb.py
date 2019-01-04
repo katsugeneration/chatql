@@ -20,7 +20,7 @@ def setup():
     global process
     if not os.path.exists(dbpath):
         os.mkdir(dbpath)
-    process = subprocess.Popen("mongod --dbpath ./%s" % dbpath, shell=True)
+    process = subprocess.Popen("mongod --dbpath ./%s --port 27018" % dbpath, shell=True)
 
 
 def teardown():
@@ -31,7 +31,7 @@ def teardown():
 
 class TestClient:
     def setup(self):
-        self.client = MongoClient()
+        self.client = MongoClient(**{"db": "chatql", "port": 27018})
 
     def test_add_scenario(self):
         Scenario.objects().delete()

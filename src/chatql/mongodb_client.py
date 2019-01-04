@@ -39,9 +39,9 @@ class History(mongoengine.Document):
 class MongoClient(object):
     """MongoDb Client Object."""
 
-    def __init__(self):
+    def __init__(self, **config):
         """Mongoclient Constructor."""
-        mongoengine.connect('chatql')
+        mongoengine.connect(**config)
 
     @property
     def scenarios(self):
