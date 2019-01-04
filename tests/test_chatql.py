@@ -10,7 +10,7 @@ from collections import namedtuple
 
 
 DummyUser = namedtuple('DummyUser', 'id')
-DummyHistory = namedtuple('DummyHistory', 'id user_id scenario')
+DummyHistory = namedtuple('DummyHistory', 'id user scenario')
 
 
 def test_version():
@@ -19,14 +19,14 @@ def test_version():
 
 class DummyEngine:
     def generate_response_text(self, request, **kwargs):
-        user_id = kwargs.get("user_id", None)
+        user = kwargs.get("user", None)
         if request == 'hello':
-            return DummyHistory(id='111', user_id=DummyUser(id=user_id), scenario={"response": "hello!"})
+            return DummyHistory(id='111', user=DummyUser(id=user), scenario={"response": "hello!"})
         else:
-            if user_id == '333':
-                return DummyHistory(id='111', user_id=DummyUser(id=user_id), scenario={"response": "OK!"})
+            if user == '333':
+                return DummyHistory(id='111', user=DummyUser(id=user), scenario={"response": "OK!"})
             else:
-                return DummyHistory(id='111', user_id=DummyUser(id=user_id), scenario={"response": "what\'s?"})
+                return DummyHistory(id='111', user=DummyUser(id=user), scenario={"response": "what\'s?"})
 
     def create_new_user(self):
         return "111"

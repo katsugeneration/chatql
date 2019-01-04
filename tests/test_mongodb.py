@@ -87,7 +87,7 @@ class TestClient:
     def test_add_history(self):
         u = User()
         h = History()
-        h.user_id = u
+        h.user = u
         h.scenario = {"response": "aaa"}
         u.save()
         h.save()
@@ -96,7 +96,7 @@ class TestClient:
     def test_add_history_check_created_at(self):
         u = User()
         h = History()
-        h.user_id = u
+        h.user = u
         h.scenario = {"response": "aaa"}
         u.save()
         h.save()
@@ -111,36 +111,36 @@ class TestClient:
     def test_add_history_no_scenario(self):
         u = User()
         h = History()
-        h.user_id = u
+        h.user = u
         u.save()
         h.save()
 
     def test_client_locals_history(self):
         u = User()
         h = History()
-        h.user_id = u
+        h.user = u
         h.scenario = {"response": "aaa"}
         u.save()
         h.save()
-        eq_(u.id, self.client.locals(u.id)["history"].only('user_id').first().user_id.id)
+        eq_(u.id, self.client.locals(u.id)["history"].only('user').first().user.id)
 
-    def test_client_locals_history_with_user_id(self):
+    def test_client_locals_history_with_user(self):
         u = User()
         h = History()
-        h.user_id = u
+        h.user = u
         h.scenario = {"response": "aaa"}
         u.save()
         h.save()
         u = User()
         h = History()
-        h.user_id = u
+        h.user = u
         h.scenario = {"response": "aaa"}
         u.save()
         h.save()
         eq_(len(History.objects()), 2)
         eq_(len(self.client.locals(u.id)["history"]), 1)
 
-    def test_client_locals_user_with_user_id(self):
+    def test_client_locals_user_with_user(self):
         u = User()
         u.save()
         eq_(u.id, self.client.locals(u.id)["user"].only('id').first().id)
@@ -188,7 +188,7 @@ class TestClient:
         s.save()
         self.client.save_history('aaa', s, u.id)
         eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
-        eq_(None, History.objects(scenario__response='bbb').only('user_id').first().user_id)
+        eq_(None, History.objects(scenario__response='bbb').only('user').first().user)
 
     def test_import_scenario(self):
         self.client.import_scenario("tests/test_scenario.json")

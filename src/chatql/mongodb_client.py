@@ -41,7 +41,7 @@ class History(mongoengine.Document):
 
     request = mongoengine.StringField()
     scenario = mongoengine.DictField()
-    user_id = mongoengine.ReferenceField(User)
+    user = mongoengine.ReferenceField(User)
     created_at = mongoengine.DateTimeField(default=datetime.datetime.utcnow)
 
 
@@ -58,11 +58,11 @@ class MongoClient(object):
         """Return All Scenario Objects."""
         return Scenario.objects()
 
-    def locals(self, user_id):
+    def locals(self, user):
         """Return user usage objects."""
         return {
-            "history": History.objects(user_id=user_id),
-            "user": User.objects(id=user_id)}
+            "history": History.objects(user=user),
+            "user": User.objects(id=user)}
 
     def create_new_user(self):
         """Create new user.
@@ -74,19 +74,19 @@ class MongoClient(object):
         u.save()
         return u
 
-    def save_history(self, request, scenario, user_id):
+    def save_history(self, request, scenario, user):
         """Save System Response History.
 
         Args:
             request (str): user input request
             scenario (Scenario or str): response scenario
-            user_id (id): user id. id must need to be user object id in db
+            user (id): user id. id must need to be user object id in db
         """
         if isinstance(scenario, Scenario):
             s = scenario.to_dict()
         else:
             s = scenario
-        h = History(request=request, scenario=s, user_id=user_id)
+        h = History(request=request, scenario=s, user=user)
         h.save()
         return h
 

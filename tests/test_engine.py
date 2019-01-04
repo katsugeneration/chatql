@@ -9,7 +9,7 @@ from collections import namedtuple
 
 DummyScenario = namedtuple('DummyScenario', 'conditions response')
 DummyUser = namedtuple('DummyUser', 'id')
-DummyHistory = namedtuple('DummyHistory', 'id user_id scenario request')
+DummyHistory = namedtuple('DummyHistory', 'id user scenario request')
 
 
 class DummyDatabaseClient(object):
@@ -18,15 +18,15 @@ class DummyDatabaseClient(object):
         self.scenarios = []
         self._history = []
 
-    def locals(self, user_id):
+    def locals(self, user):
         return self._locals
 
     def create_new_user(self):
         return DummyUser(id="1")
 
-    def save_history(self, request, scenario, user_id):
-        self._history.append((request, scenario, user_id))
-        return DummyHistory(id='', request=request, scenario=scenario, user_id=user_id)
+    def save_history(self, request, scenario, user):
+        self._history.append((request, scenario, user))
+        return DummyHistory(id='', request=request, scenario=scenario, user=user)
 
 
 class TestEngine:
@@ -41,7 +41,7 @@ class TestEngine:
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='True', response='OK!')]
         engine = DialogEngine(client)
-        engine.generate_response_text('', user_id='111')
+        engine.generate_response_text('', user='111')
         eq_(client._history[0][0], '')
         eq_(client._history[0][1], client.scenarios[0])
         eq_(client._history[0][2], '111')
@@ -50,7 +50,7 @@ class TestEngine:
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='False', response='OK!')]
         engine = DialogEngine(client)
-        engine.generate_response_text('', user_id='111')
+        engine.generate_response_text('', user='111')
         eq_(client._history[0][0], '')
         eq_(client._history[0][1], None)
         eq_(client._history[0][2], '111')

@@ -36,11 +36,11 @@ class Query(graphene.ObjectType):
             user = engine.create_new_user()
         res_history = engine.generate_response_text(
             request,
-            user_id=user)
+            user=user)
         return Response(
             id=res_history.id,
             request=request,
-            user=User(id=res_history.user_id.id),
+            user=User(id=res_history.user.id),
             text=res_history.scenario['response'])
 
     def resolve_user(self, info, id=None):
