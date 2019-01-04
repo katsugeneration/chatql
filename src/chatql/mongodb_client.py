@@ -31,8 +31,8 @@ class History(mongoengine.Document):
     """System Response History Class."""
 
     request = mongoengine.StringField()
-    scenario = mongoengine.DictField(required=True)
-    user_id = mongoengine.ReferenceField(User, required=True)
+    scenario = mongoengine.DictField()
+    user_id = mongoengine.ReferenceField(User)
     created_at = mongoengine.DateTimeField(default=datetime.datetime.utcnow)
 
 

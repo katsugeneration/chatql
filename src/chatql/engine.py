@@ -35,6 +35,7 @@ class DialogEngine(object):
             if eval(conditions, local_values):
                 self._client.save_history(request, s, user_id)
                 return s.response
+        self._client.save_history(request, None, user_id)
         return None
 
     def create_new_user(self):

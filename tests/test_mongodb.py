@@ -109,7 +109,6 @@ class TestClient:
         utc = datetime.datetime.utcnow()
         ok_(utc >= h.created_at >= utc - datetime.timedelta(seconds=1))
 
-    @raises(mongoengine.errors.ValidationError)
     def test_add_history_no_user(self):
         History.objects().delete()
         User.objects().delete()
@@ -117,7 +116,6 @@ class TestClient:
         h.scenario = {"response": "aaa"}
         h.save()
 
-    @raises(mongoengine.errors.ValidationError)
     def test_add_history_no_scenario(self):
         History.objects().delete()
         User.objects().delete()
@@ -178,14 +176,32 @@ class TestClient:
 
     def test_save_history(self):
         History.objects().delete()
-        s = Scenario()
+        s = Scenario(response='bbb')
         u = User()
         s.save()
         u.save()
         s_dict = {
             'attributes': s.attributes,
             'conditions': s.conditions,
-            'response': s.conditions,
+            'response': s.response,
         }
         self.client.save_history('aaa', s_dict, u.id)
-        eq_('aaa', History.objects().only('request').first().request)
+        eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)
+
+    def test_save_history_scenario_is_none(self):
+        History.objects().delete()
+        u = User()
+        u.save()
+        self.client.save_history('aaa', None, u.id)
+        eq_(None, History.objects(scenario__response='bbb').only('request').first())
+
+    def test_save_history_user_is_none(self):
+        History.objects().delete()
+        s = Scenario(response='bbb')
+        s_dict = {
+            'attributes': s.attributes,
+            'conditions': s.conditions,
+            'response': s.response,
+        }
+        self.client.save_history('aaa', s_dict, None)
+        eq_('aaa', History.objects(scenario__response='bbb').only('request').first().request)

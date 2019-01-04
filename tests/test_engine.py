@@ -44,6 +44,15 @@ class TestEngine:
         eq_(client._history[0][1], client.scenarios[0])
         eq_(client._history[0][2], None)
 
+    def test_generate_response_check_save_history_response_None(self):
+        client = DummyDatabaseClient()
+        client.scenarios = [DummyScenario(conditions='False', response='OK!')]
+        engine = DialogEngine(client)
+        engine.generate_response_text('')
+        eq_(client._history[0][0], '')
+        eq_(client._history[0][1], None)
+        eq_(client._history[0][2], None)
+
     def test_generate_response_wuthout_condition_is_true(self):
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='False', response='OK!')]
