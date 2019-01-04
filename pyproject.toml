@@ -9,6 +9,7 @@ homeprepositoryage = "https://github.com/katsugeneration/chatql"
 [tool.poetry.dependencies]
 python = "^3.6"
 graphene = "^2.1"
+mongoengine = "^0.16.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
