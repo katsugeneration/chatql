@@ -48,6 +48,7 @@ class History(mongoengine.Document):
 class MongoClient(object):
     """MongoDb Client Object."""
 
+    # TODO: Add shortcut function to locals(ex: isonce)
     def __init__(self, **config):
         """Mongoclient Constructor."""
         mongoengine.connect(**config)
@@ -69,7 +70,7 @@ class MongoClient(object):
         """
         u = User()
         u.save()
-        return u.id
+        return u
 
     def save_history(self, request, scenario, user_id):
         """Save System Response History.

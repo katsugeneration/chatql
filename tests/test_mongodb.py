@@ -171,8 +171,8 @@ class TestClient:
 
     def test_create_new_user(self):
         User.objects().delete()
-        id = self.client.create_new_user()
-        eq_(id, User.objects().only('id').first().id)
+        u = self.client.create_new_user()
+        eq_(u.id, User.objects().only('id').first().id)
 
     def test_save_history(self):
         History.objects().delete()
