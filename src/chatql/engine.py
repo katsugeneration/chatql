@@ -20,11 +20,14 @@ class DialogEngine(object):
 
         Args:
             request (str): user input text
-            user_id (str): (Optional) user specified id
+            user_id (str): (Optional) user specified id.When user_id is None, system create new user
             context (dict): other values for generating response
         Return:
             response (str): response text. when no response text is None.
         """
+        if user_id is None:
+            user_id = self.create_new_user()
+
         local_values = dict(
             {"request": request},
             **context,

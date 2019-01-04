@@ -39,19 +39,27 @@ class TestEngine:
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='True', response='OK!')]
         engine = DialogEngine(client)
-        engine.generate_response_text('')
+        engine.generate_response_text('', user_id='111')
         eq_(client._history[0][0], '')
         eq_(client._history[0][1], client.scenarios[0])
-        eq_(client._history[0][2], None)
+        eq_(client._history[0][2], '111')
 
     def test_generate_response_check_save_history_response_None(self):
         client = DummyDatabaseClient()
         client.scenarios = [DummyScenario(conditions='False', response='OK!')]
         engine = DialogEngine(client)
-        engine.generate_response_text('')
+        engine.generate_response_text('', user_id='111')
         eq_(client._history[0][0], '')
         eq_(client._history[0][1], None)
-        eq_(client._history[0][2], None)
+        eq_(client._history[0][2], '111')
+
+    def test_generate_response_with_user_is_none(self):
+        client = DummyDatabaseClient()
+        client.scenarios = [DummyScenario(conditions="True", response='OK!')]
+        engine = DialogEngine(client)
+        text = engine.generate_response_text('')
+        eq_(text, 'OK!')
+        eq_(client._history[0][2], '1')
 
     def test_generate_response_wuthout_condition_is_true(self):
         client = DummyDatabaseClient()
