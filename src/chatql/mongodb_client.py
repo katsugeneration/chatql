@@ -61,3 +61,8 @@ class MongoClient(object):
         u = User()
         u.save()
         return u.id
+
+    def save_history(self, request, scenario, user_id):
+        """Save System Response History."""
+        h = History(request=request, scenario=scenario, user_id=user_id)
+        h.save()

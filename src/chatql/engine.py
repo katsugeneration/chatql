@@ -33,6 +33,7 @@ class DialogEngine(object):
         for s in self._client.scenarios:
             conditions = s.conditions.strip()
             if eval(conditions, local_values):
+                self._client.save_history(request, s, user_id)
                 return s.response
         return None
 

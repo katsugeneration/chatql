@@ -15,12 +15,16 @@ class DummyDatabaseClient(object):
     def __init__(self):
         self._locals = {}
         self.scenarios = []
+        self._history = []
 
     def locals(self, user_id):
         return self._locals
 
     def create_new_user(self):
         return DummyUser(id="1")
+
+    def save_history(self, request, scenario, user_id):
+        self._history.append((request, scenario, user_id))
 
 
 class TestEngine:
@@ -30,6 +34,15 @@ class TestEngine:
         engine = DialogEngine(client)
         text = engine.generate_response_text('')
         eq_(text, 'OK!')
+
+    def test_generate_response_check_save_history(self):
+        client = DummyDatabaseClient()
+        client.scenarios = [DummyScenario(conditions='True', response='OK!')]
+        engine = DialogEngine(client)
+        engine.generate_response_text('')
+        eq_(client._history[0][0], '')
+        eq_(client._history[0][1], client.scenarios[0])
+        eq_(client._history[0][2], None)
 
     def test_generate_response_wuthout_condition_is_true(self):
         client = DummyDatabaseClient()

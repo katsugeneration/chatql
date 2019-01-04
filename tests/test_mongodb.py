@@ -175,3 +175,17 @@ class TestClient:
         User.objects().delete()
         id = self.client.create_new_user()
         eq_(id, User.objects().only('id').first().id)
+
+    def test_save_history(self):
+        History.objects().delete()
+        s = Scenario()
+        u = User()
+        s.save()
+        u.save()
+        s_dict = {
+            'attributes': s.attributes,
+            'conditions': s.conditions,
+            'response': s.conditions,
+        }
+        self.client.save_history('aaa', s_dict, u.id)
+        eq_('aaa', History.objects().only('request').first().request)
