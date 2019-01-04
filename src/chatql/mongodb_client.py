@@ -51,3 +51,13 @@ class MongoClient(object):
         return {
             "history": History.objects(user_id=user_id),
             "user": User.objects(id=user_id)}
+
+    def create_new_user(self):
+        """Create new user.
+
+        Return:
+            ID (str): new user id
+        """
+        u = User()
+        u.save()
+        return u.id

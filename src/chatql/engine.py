@@ -22,6 +22,8 @@ class DialogEngine(object):
             request (str): user input text
             user_id (str): (Optional) user specified id
             context (dict): other values for generating response
+        Return:
+            response (str): response text. when no response text is None.
         """
         local_values = dict(
             {"request": request},
@@ -33,3 +35,11 @@ class DialogEngine(object):
             if eval(conditions, local_values):
                 return s.response
         return None
+
+    def create_new_user(self):
+        """Create new user.
+
+        Return:
+            ID (str): new user id
+        """
+        return self._client.create_new_user().id

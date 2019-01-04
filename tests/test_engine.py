@@ -8,6 +8,7 @@ from collections import namedtuple
 
 
 DummyScenario = namedtuple('DummyScenario', 'conditions response')
+DummyUser = namedtuple('DummyUser', 'id')
 
 
 class DummyDatabaseClient(object):
@@ -17,6 +18,9 @@ class DummyDatabaseClient(object):
 
     def locals(self, user_id):
         return self._locals
+
+    def create_new_user(self):
+        return DummyUser(id="1")
 
 
 class TestEngine:
@@ -75,3 +79,8 @@ class TestEngine:
         engine = DialogEngine(client)
         text = engine.generate_response_text('')
         eq_(text, 'OK!')
+
+    def test_create_new_user(self):
+        client = DummyDatabaseClient()
+        engine = DialogEngine(client)
+        eq_(engine.create_new_user(), "1")

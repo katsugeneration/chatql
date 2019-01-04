@@ -170,3 +170,8 @@ class TestClient:
         u.save()
         eq_(len(User.objects()), 2)
         eq_(len(self.client.locals(u.id)["user"]), 1)
+
+    def test_create_new_user(self):
+        User.objects().delete()
+        id = self.client.create_new_user()
+        eq_(id, User.objects().only('id').first().id)
