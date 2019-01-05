@@ -40,7 +40,7 @@ class DialogEngine(object):
 
         for s in self._client.scenarios:
             conditions = s.conditions.strip()
-            if eval(conditions, global_values, s.attributes):
+            if eval(conditions, global_values, {"attributes": s.attributes}):
                 return self._client.save_history(request, s, user)
         return self._client.save_history(request, None, user)
 

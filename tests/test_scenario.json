@@ -3,7 +3,7 @@
         "attributes": {
             "id": "111"
         },
-        "conditions": "isonce(id)",
+        "conditions": "isonce(attributes['id'])",
         "response": "Hello!"
     },
     {

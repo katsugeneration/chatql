@@ -114,7 +114,7 @@ class TestEngine:
 
     def test_generate_response_with_attributes(self):
         client = DummyDatabaseClient()
-        conditions = """id == '111'"""
+        conditions = """attributes['id'] == '111'"""
         client.scenarios = [DummyScenario(conditions=conditions, response='OK!', attributes={"id": "111"})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')
