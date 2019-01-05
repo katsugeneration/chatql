@@ -14,15 +14,15 @@ Following dependency python modules are installed when `pip install`.
 
 ## TODO
 - Application Function
-    - [] Response Generator with Template Engine
-    - [] Extract Entity with Template Matching
-    - [] Non Text Query
-    - [] Intent Estimator with Machine Learning
-    - [] Extract Entity with Machine Learning
+    - [ ] Response Generator with Template Engine
+    - [ ] Extract Entity with Template Matching
+    - [ ] Non Text Query
+    - [ ] Intent Estimator with Machine Learning
+    - [ ] Extract Entity with Machine Learning
 - Document
-    - [] API Docs 
-    - [] Conditions Pattern Docs
-    - [] Response Docs
+    - [ ] API Docs 
+    - [ ] Conditions Pattern Docs
+    - [ ] Response Docs
 
 ## License
 MIT License.
