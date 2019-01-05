@@ -192,5 +192,5 @@ class TestClient:
 
     def test_import_scenario(self):
         self.client.import_scenario("tests/test_scenario.json")
-        eq_(2, Scenario.objects().count())
-        eq_("112", Scenario.objects()[1].attributes["id"])
+        eq_(3, Scenario.objects().count())
+        eq_("113", Scenario.objects()[1].attributes["id"])

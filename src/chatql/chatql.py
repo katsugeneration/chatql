@@ -32,8 +32,6 @@ class Query(graphene.ObjectType):
     def resolve_response(self, info, request=None, user=None):
         """Request param resolver."""
         engine = info.context['engine']
-        if user is None:
-            user = engine.create_new_user()
         res_history = engine.generate_response_text(
             request,
             user=user)
