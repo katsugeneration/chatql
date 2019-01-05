@@ -8,6 +8,13 @@
     },
     {
         "attributes": {
+            "id": "113"
+        },
+        "conditions": "regex(r'(.*?)your name(.*?)')",
+        "response": "My name is cahtql."
+    },
+    {
+        "attributes": {
             "id": "112"
         },
         "conditions": "True",

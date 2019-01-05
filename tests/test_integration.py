@@ -80,3 +80,20 @@ class TestIntegration:
         result = chatql.schema.execute(query, context={'engine': engine}, variables={'user': result.data['response']['user']['id']})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'Hello! Again!')
+
+    def test_basic_access_matcher(self):
+        query = '''
+            query getResponse($user: ID) {
+                response(request: "What's your name?", user: $user) {
+                    id
+                    text
+                    user {
+                        id
+                    }
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={'engine': engine})
+        result = chatql.schema.execute(query, context={'engine': engine}, variables={'user': result.data['response']['user']['id']})
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'My name is cahtql.')
