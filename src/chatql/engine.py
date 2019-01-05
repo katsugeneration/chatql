@@ -33,14 +33,14 @@ class DialogEngine(object):
             "regex": RegexMatcher(request)
         }
 
-        local_values = dict(
+        global_values = dict(
             **matcher,
             **context,
             **self._client.locals(user))
 
         for s in self._client.scenarios:
             conditions = s.conditions.strip()
-            if eval(conditions, local_values, s.attributes):
+            if eval(conditions, global_values, s.attributes):
                 return self._client.save_history(request, s, user)
         return self._client.save_history(request, None, user)
 
