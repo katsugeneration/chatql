@@ -2,6 +2,7 @@
 #
 # Licensed under the MIT License
 """Dialog Management Module."""
+from chatql.matcher import RegexMatcher
 
 
 class DialogEngine(object):
@@ -28,8 +29,12 @@ class DialogEngine(object):
         if user is None:
             user = self.create_new_user()
 
+        matcher = {
+            "regex": RegexMatcher(request)
+        }
+
         local_values = dict(
-            {"request": request},
+            **matcher,
             **context,
             **self._client.locals(user))
 

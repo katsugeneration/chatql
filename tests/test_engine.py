@@ -80,7 +80,7 @@ class TestEngine:
 
     def test_generate_response_with_request(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions='request == "aaa"', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='regex("a*?")', response='OK!')]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('aaa')
         eq_(resposne.scenario.response, 'OK!')
