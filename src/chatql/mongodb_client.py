@@ -73,16 +73,22 @@ class MongoClient(object):
             **methods
         )
 
-    def isonce(self, user, id):
+    def isonce(self, user, id, period=None):
         """Check scenrio is once in specific period.
-        
+
         Args:
             user (str): user id used by history filtering
             id (str): scenario id
         Return:
             result (bool): return True case scenario is not in histor, otherwise return False.
         """
-        return (History.objects(user=user).filter(scenario__attributes__id=id).count() == 0)
+        if period is None:
+            period_from = datetime.datetime.min
+        else:
+            period_from = datetime.datetime.utcnow() - period
+        return (History.objects(user=user).filter(
+                    scenario__attributes__id=id,
+                    created_at__gte=period_from).count() == 0)
 
     def create_new_user(self):
         """Create new user.

@@ -210,3 +210,21 @@ class TestClient:
         h = History(scenario=s.to_dict(), user=u)
         h.save()
         eq_(False, self.client.globals(u.id)['isonce'](s.attributes['id']))
+
+    def test_isonce_in_history_but_timeout(self):
+        u = User()
+        u.save()
+        s = Scenario(attributes={'id': '111'}, response='bbb')
+        s.save()
+        h = History(scenario=s.to_dict(), user=u)
+        h.save()
+        eq_(True, self.client.globals(u.id)['isonce'](s.attributes['id'], period=datetime.timedelta(0)))
+
+    def test_isonce_in_history_with_time(self):
+        u = User()
+        u.save()
+        s = Scenario(attributes={'id': '111'}, response='bbb')
+        s.save()
+        h = History(scenario=s.to_dict(), user=u)
+        h.save()
+        eq_(False, self.client.globals(u.id)['isonce'](s.attributes['id'], period=datetime.timedelta(seconds=5)))
