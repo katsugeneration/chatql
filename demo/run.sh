@@ -1,2 +1,2 @@
 mongod --dbpath=mongodb &
-poetry run python server.py
+python3 server.py

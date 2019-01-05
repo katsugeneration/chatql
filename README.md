@@ -15,7 +15,7 @@ Following dependency python modules are installed when `pip install`.
 ## Demo
 You clone this repository and run following commands.
 
-After, you can access graphql interface `POST localhost:8080/graphql`.
+After, you can access GraphQL interface `POST localhost:8080/graphql`.
 
 Please check response by GraphQL tool (ex: [GraphiQL](https://electronjs.org/apps/graphiql)).
 ```

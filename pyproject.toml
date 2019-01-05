@@ -4,7 +4,7 @@ version = "0.1.0"
 readme = "README.md"
 authors = ["katsugeneration <katsu.generation.888@gmail.com>"]
 homepage = "https://github.com/katsugeneration"
-homeprepositoryage = "https://github.com/katsugeneration/chatql"
+repository = "https://github.com/katsugeneration/chatql"
 
 [tool.poetry.dependencies]
 python = "^3.6"

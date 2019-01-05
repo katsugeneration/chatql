@@ -11,10 +11,8 @@ RUN ln -s /usr/bin/pip3 /usr/bin/pip
 WORKDIR /var/local/
 RUN git clone https://github.com/katsugeneration/chatql
 WORKDIR /var/local/chatql
-RUN pip3 install poetry
-RUN poetry install --no-dev -v
-RUN poetry run pip install wheel
-RUN poetry run pip install flask flask-graphql
+RUN pip3 install wheel
+RUN pip3 install chatql flask flask-graphql
 
 ADD ./ /var/local/chatql/demo/
 WORKDIR /var/local/chatql/demo
