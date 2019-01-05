@@ -194,3 +194,19 @@ class TestClient:
         self.client.import_scenario("tests/test_scenario.json")
         eq_(3, Scenario.objects().count())
         eq_("113", Scenario.objects()[1].attributes["id"])
+
+    def test_isonce(self):
+        u = User()
+        u.save()
+        s = Scenario(attributes={'id': '111'}, response='bbb')
+        s.save()
+        eq_(True, self.client.globals(u.id)['isonce'](s.id))
+
+    def test_isonce_in_history(self):
+        u = User()
+        u.save()
+        s = Scenario(attributes={'id': '111'}, response='bbb')
+        s.save()
+        h = History(scenario=s.to_dict(), user=u)
+        h.save()
+        eq_(False, self.client.globals(u.id)['isonce'](s.attributes['id']))

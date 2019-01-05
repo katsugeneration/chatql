@@ -5,6 +5,7 @@
 import mongoengine
 import datetime
 import json
+import functools
 
 
 class Scenario(mongoengine.Document):
@@ -48,7 +49,6 @@ class History(mongoengine.Document):
 class MongoClient(object):
     """MongoDb Client Object."""
 
-    # TODO: Add shortcut function to globals(ex: isonce)
     def __init__(self, **config):
         """Mongoclient Constructor."""
         mongoengine.connect(**config)
@@ -59,10 +59,30 @@ class MongoClient(object):
         return Scenario.objects()
 
     def globals(self, user):
-        """Return user usage objects."""
-        return {
+        """Return user usage objects and method."""
+        objects = {
             "history": History.objects(user=user),
-            "user": User.objects(id=user)}
+            "user": User.objects(id=user)
+        }
+
+        methods = {
+            "isonce": functools.partial(self.isonce, *[user])
+        }
+        return dict(
+            **objects,
+            **methods
+        )
+
+    def isonce(self, user, id):
+        """Check scenrio is once in specific period.
+        
+        Args:
+            user (str): user id used by history filtering
+            id (str): scenario id
+        Return:
+            result (bool): return True case scenario is not in histor, otherwise return False.
+        """
+        return (History.objects(user=user).filter(scenario__attributes__id=id).count() == 0)
 
     def create_new_user(self):
         """Create new user.

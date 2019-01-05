@@ -3,7 +3,7 @@
         "attributes": {
             "id": "111"
         },
-        "conditions": "history.filter(scenario__attributes__id='111').count() == 0",
+        "conditions": "isonce(id)",
         "response": "Hello!"
     },
     {
