@@ -12,6 +12,15 @@ Following dependency python modules are installed when `pip install`.
 - graphene >= 2.1
 - mongoengine >= 0.16.3
 
+## Demo
+You clone this repository and run following commands.
+After, you can access graphql interface `POST localhost:8080/graphql`.
+Please check response by GraphQL tool (ex: [GraphiQL](https://electronjs.org/apps/graphiql)).
+```
+docker build ./demo -t chatql --force-rm=true
+docker run -p 8080:5000 -it chatql
+```
+
 ## TODO
 - Application Function
     - [ ] Response Generator with Template Engine
