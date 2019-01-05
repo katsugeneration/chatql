@@ -48,7 +48,7 @@ class History(mongoengine.Document):
 class MongoClient(object):
     """MongoDb Client Object."""
 
-    # TODO: Add shortcut function to locals(ex: isonce)
+    # TODO: Add shortcut function to globals(ex: isonce)
     def __init__(self, **config):
         """Mongoclient Constructor."""
         mongoengine.connect(**config)
@@ -58,7 +58,7 @@ class MongoClient(object):
         """Return All Scenario Objects."""
         return Scenario.objects()
 
-    def locals(self, user):
+    def globals(self, user):
         """Return user usage objects."""
         return {
             "history": History.objects(user=user),

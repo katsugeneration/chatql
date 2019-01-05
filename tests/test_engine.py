@@ -14,12 +14,12 @@ DummyHistory = namedtuple('DummyHistory', 'id user scenario request')
 
 class DummyDatabaseClient(object):
     def __init__(self):
-        self._locals = {}
+        self._globals = {}
         self.scenarios = []
         self._history = []
 
-    def locals(self, user):
-        return self._locals
+    def globals(self, user):
+        return self._globals
 
     def create_new_user(self):
         return DummyUser(id="1")
@@ -70,9 +70,9 @@ class TestEngine:
         resposne = engine.generate_response_text('')
         ok_(resposne.scenario is None)
 
-    def test_generate_response_with_locals(self):
+    def test_generate_response_with_globals(self):
         client = DummyDatabaseClient()
-        client._locals = {'a': 1}
+        client._globals = {'a': 1}
         client.scenarios = [DummyScenario(conditions='a == 1', response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')

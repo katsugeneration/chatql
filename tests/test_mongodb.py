@@ -115,16 +115,16 @@ class TestClient:
         u.save()
         h.save()
 
-    def test_client_locals_history(self):
+    def test_client_globals_history(self):
         u = User()
         h = History()
         h.user = u
         h.scenario = {"response": "aaa"}
         u.save()
         h.save()
-        eq_(u.id, self.client.locals(u.id)["history"].only('user').first().user.id)
+        eq_(u.id, self.client.globals(u.id)["history"].only('user').first().user.id)
 
-    def test_client_locals_history_with_user(self):
+    def test_client_globals_history_with_user(self):
         u = User()
         h = History()
         h.user = u
@@ -138,20 +138,20 @@ class TestClient:
         u.save()
         h.save()
         eq_(len(History.objects()), 2)
-        eq_(len(self.client.locals(u.id)["history"]), 1)
+        eq_(len(self.client.globals(u.id)["history"]), 1)
 
-    def test_client_locals_user_with_user(self):
+    def test_client_globals_user_with_user(self):
         u = User()
         u.save()
-        eq_(u.id, self.client.locals(u.id)["user"].only('id').first().id)
+        eq_(u.id, self.client.globals(u.id)["user"].only('id').first().id)
 
-    def test_client_locals_user(self):
+    def test_client_globals_user(self):
         u = User()
         u.save()
         u = User()
         u.save()
         eq_(len(User.objects()), 2)
-        eq_(len(self.client.locals(u.id)["user"]), 1)
+        eq_(len(self.client.globals(u.id)["user"]), 1)
 
     def test_create_new_user(self):
         u = self.client.create_new_user()

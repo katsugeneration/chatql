@@ -36,7 +36,7 @@ class DialogEngine(object):
         global_values = dict(
             **matcher,
             **context,
-            **self._client.locals(user))
+            **self._client.globals(user))
 
         for s in self._client.scenarios:
             conditions = s.conditions.strip()
