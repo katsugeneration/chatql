@@ -7,7 +7,7 @@ from nose.tools import eq_, ok_
 from collections import namedtuple
 
 
-DummyScenario = namedtuple('DummyScenario', 'conditions response')
+DummyScenario = namedtuple('DummyScenario', 'conditions response attributes')
 DummyUser = namedtuple('DummyUser', 'id')
 DummyHistory = namedtuple('DummyHistory', 'id user scenario request')
 
@@ -32,14 +32,14 @@ class DummyDatabaseClient(object):
 class TestEngine:
     def test_generate_response(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions='True', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='True', response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')
         eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_check_save_history(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions='True', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='True', response='OK!', attributes={})]
         engine = DialogEngine(client)
         engine.generate_response_text('', user='111')
         eq_(client._history[0][0], '')
@@ -48,7 +48,7 @@ class TestEngine:
 
     def test_generate_response_check_save_history_response_None(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions='False', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='False', response='OK!', attributes={})]
         engine = DialogEngine(client)
         engine.generate_response_text('', user='111')
         eq_(client._history[0][0], '')
@@ -57,7 +57,7 @@ class TestEngine:
 
     def test_generate_response_with_user_is_none(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions="True", response='OK!')]
+        client.scenarios = [DummyScenario(conditions="True", response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')
         eq_(resposne.scenario.response, 'OK!')
@@ -65,7 +65,7 @@ class TestEngine:
 
     def test_generate_response_wuthout_condition_is_true(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions='False', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='False', response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')
         ok_(resposne.scenario is None)
@@ -73,21 +73,21 @@ class TestEngine:
     def test_generate_response_with_locals(self):
         client = DummyDatabaseClient()
         client._locals = {'a': 1}
-        client.scenarios = [DummyScenario(conditions='a == 1', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='a == 1', response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')
         eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_with_request(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions='regex("a*?")', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='regex("a*?")', response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('aaa')
         eq_(resposne.scenario.response, 'OK!')
 
     def test_generate_response_with_other_value(self):
         client = DummyDatabaseClient()
-        client.scenarios = [DummyScenario(conditions='aaa == "bbb"', response='OK!')]
+        client.scenarios = [DummyScenario(conditions='aaa == "bbb"', response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('', aaa='bbb')
         eq_(resposne.scenario.response, 'OK!')
@@ -96,7 +96,7 @@ class TestEngine:
         client = DummyDatabaseClient()
         conditions="""True \
             and True"""
-        client.scenarios = [DummyScenario(conditions=conditions, response='OK!')]
+        client.scenarios = [DummyScenario(conditions=conditions, response='OK!', attributes={})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')
         eq_(resposne.scenario.response, 'OK!')
@@ -107,7 +107,15 @@ class TestEngine:
             True \
             and True
         """
-        client.scenarios = [DummyScenario(conditions=conditions, response='OK!')]
+        client.scenarios = [DummyScenario(conditions=conditions, response='OK!', attributes={})]
+        engine = DialogEngine(client)
+        resposne = engine.generate_response_text('')
+        eq_(resposne.scenario.response, 'OK!')
+
+    def test_generate_response_with_attributes(self):
+        client = DummyDatabaseClient()
+        conditions = """id == '111'"""
+        client.scenarios = [DummyScenario(conditions=conditions, response='OK!', attributes={"id": "111"})]
         engine = DialogEngine(client)
         resposne = engine.generate_response_text('')
         eq_(resposne.scenario.response, 'OK!')
