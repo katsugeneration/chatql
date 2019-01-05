@@ -73,6 +73,17 @@ class TestClient:
         s.save()
         eq_(len(self.client.scenarios), 1)
 
+    def test_check_scenarios_property_order(self):
+        s = Scenario(attributes={'id': 1, 'priority': 100})
+        s.save()
+        eq_(self.client.scenarios.first().attributes['id'], 1)
+        s = Scenario(attributes={'id': 2, 'priority': 110})
+        s.save()
+        eq_(self.client.scenarios.first().attributes['id'], 2)
+        s = Scenario(attributes={'id': 3})
+        s.save()
+        eq_(self.client.scenarios[2].attributes['id'], 3)
+
     def test_add_user(self):
         u = User()
         u.save()
@@ -193,7 +204,7 @@ class TestClient:
     def test_import_scenario(self):
         self.client.import_scenario("tests/test_scenario.json")
         eq_(3, Scenario.objects().count())
-        eq_("113", Scenario.objects()[1].attributes["id"])
+        eq_("112", Scenario.objects()[1].attributes["id"])
 
     def test_isonce(self):
         u = User()

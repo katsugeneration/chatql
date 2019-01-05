@@ -56,7 +56,7 @@ class MongoClient(object):
     @property
     def scenarios(self):
         """Return All Scenario Objects."""
-        return Scenario.objects()
+        return Scenario.objects().order_by('-attributes__priority')
 
     def globals(self, user):
         """Return user usage objects and method."""
