@@ -203,7 +203,6 @@ class TestClient:
 
     def test_import_scenario(self):
         self.client.import_scenario("tests/test_scenario.json")
-        eq_(3, Scenario.objects().count())
         eq_("112", Scenario.objects()[1].attributes["id"])
 
     def test_isonce(self):
@@ -239,3 +238,21 @@ class TestClient:
         h = History(scenario=s.to_dict(), user=u)
         h.save()
         eq_(False, self.client.globals(u.id)['isonce'](s.attributes['id'], period=datetime.timedelta(seconds=5)))
+
+    def test_get_last_history(self):
+        u = User()
+        u.save()
+        s = Scenario(attributes={'id': '111'}, response='bbb')
+        s.save()
+        h = History(scenario=s.to_dict(), user=u)
+        h.save()
+        h = History(scenario=s.to_dict(), user=u)
+        h.save()
+        eq_(h.id, self.client.globals(u.id)['last_history']().id)
+
+    def test_get_last_history_case_nothing(self):
+        u = User()
+        u.save()
+        s = Scenario(attributes={'id': '111'}, response='bbb')
+        s.save()
+        eq_(None, self.client.globals(u.id)['last_history']())

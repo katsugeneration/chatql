@@ -66,7 +66,8 @@ class MongoClient(object):
         }
 
         methods = {
-            "isonce": functools.partial(self.isonce, *[user])
+            "isonce": functools.partial(self.isonce, *[user]),
+            "last_history": functools.partial(self.last_history, *[user]),
         }
         return dict(
             **objects,
@@ -89,6 +90,16 @@ class MongoClient(object):
         return (History.objects(user=user).filter(
                     scenario__attributes__id=id,
                     created_at__gte=period_from).count() == 0)
+
+    def last_history(self, user):
+        """Get last history object.
+
+        Args:
+            user (str): user id used by history filtering
+        Return:
+            result (History): return History object when user's history exists, otherwise return None.
+        """
+        return History.objects(user=user).order_by('-created_at').first()
 
     def create_new_user(self):
         """Create new user.
