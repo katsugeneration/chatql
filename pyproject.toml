@@ -10,6 +10,8 @@ repository = "https://github.com/katsugeneration/chatql"
 python = "^3.6"
 graphene = "^2.1"
 mongoengine = "^0.16.3"
+flask = {version = "^1.0",extras = ["server"]}
+line-bot-sdk = {version = "^1.8",extras = ["line"]}
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
