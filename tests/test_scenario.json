@@ -21,5 +21,13 @@
         },
         "conditions": "regex(r'(.*?)your name(.*?)')",
         "response": "My name is cahtql."
+    },
+    {
+        "attributes": {
+            "id": "114",
+            "priority": 110
+        },
+        "conditions": "regex(r'nice to meet you') and (last_history() is not None and last_history().scenario['attributes']['id'] == '113')",
+        "response": "Nice to meet you too!"
     }
 ]

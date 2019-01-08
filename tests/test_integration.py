@@ -97,3 +97,39 @@ class TestIntegration:
         result = chatql.schema.execute(query, context={'engine': engine}, variables={'user': result.data['response']['user']['id']})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'My name is cahtql.')
+
+    def test_basic_access_get_last(self):
+        query = '''
+            query getResponse($request: String!, $user: ID) {
+                response(request: $request, user: $user) {
+                    id
+                    text
+                    user {
+                        id
+                    }
+                }
+            }
+        '''
+        result = chatql.schema.execute(
+            query, context={'engine': engine},
+            variables={'request': 'Hello'})
+        result = chatql.schema.execute(
+            query, context={'engine': engine},
+            variables={'request': 'nice to meet you', 'user': result.data['response']['user']['id']})
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'Hello! Again!')
+
+        result = chatql.schema.execute(
+            query, context={'engine': engine},
+            variables={'request': 'What\'s your name?', 'user': result.data['response']['user']['id']})
+        result = chatql.schema.execute(
+            query, context={'engine': engine},
+            variables={'request': 'nice to meet you', 'user': result.data['response']['user']['id']})
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'Nice to meet you too!')
+
+        result = chatql.schema.execute(
+            query, context={'engine': engine},
+            variables={'request': 'nice to meet you', 'user': result.data['response']['user']['id']})
+        eq_(result.errors, None)
+        eq_(result.data['response']['text'], 'Hello! Again!')
