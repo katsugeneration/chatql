@@ -2,6 +2,7 @@
 #
 # Licensed under the MIT License
 """GraphQL accessor test code."""
+import json
 import chatql
 from graphql import GraphQLError
 from chatql import __version__
@@ -28,8 +29,11 @@ class DummyEngine:
             else:
                 return DummyHistory(id='111', user=DummyUser(id=user), scenario={"response": "what\'s?"})
 
-    def create_new_user(self):
+    def create_new_user(self, **option):
         return "111"
+
+    def get_user_attributes(self, user_id):
+        return {"aaa": "aaa"}
 
 
 class TestQL:
@@ -98,7 +102,23 @@ class TestQL:
         eq_(result.errors, None)
         eq_(result.data['createUser']['user']['id'], "111")
 
-    def test_get_user(self):
+    def test_create_user_add_option(self):
+        query = '''
+            mutation createUser($optionalArgs: String) {
+                createUser(optionalArgs: $optionalArgs) {
+                    user {
+                        id
+                        optionalArgs
+                    }
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={"engine": DummyEngine()}, variables={"optionalArgs": json.dumps({"aaa": "aaa"})})
+        eq_(result.errors, None)
+        eq_(result.data['createUser']['user']['id'], "111")
+        eq_(result.data['createUser']['user']['optionalArgs'], "{\"aaa\": \"aaa\"}")
+
+    def test_get_user_attributes(self):
         query = '''
             query getUser($id: ID!) {
                 user(id: $id) {
@@ -109,6 +129,20 @@ class TestQL:
         result = chatql.schema.execute(query, context={"engine": DummyEngine()}, variables={'id': '222'})
         eq_(result.errors, None)
         eq_(result.data['user']['id'], "222")
+
+    def test_get_user_attributes_with_option(self):
+        query = '''
+            query getUser($id: ID!) {
+                user(id: $id) {
+                    id
+                    optionalArgs
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={'engine': DummyEngine()}, variables={"id": "222"})
+        eq_(result.errors, None)
+        eq_(result.data['user']['id'], "222")
+        eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')
 
     def test_response_hello_with_user(self):
         query = '''

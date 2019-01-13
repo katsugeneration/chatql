@@ -6,6 +6,7 @@ import mongoengine
 import datetime
 import json
 import functools
+import types
 
 
 class Scenario(mongoengine.Document):
@@ -34,7 +35,21 @@ class Scenario(mongoengine.Document):
 class User(mongoengine.DynamicDocument):
     """User Class."""
 
-    pass
+    def to_dict(self):
+        """Return dictionary changed object."""
+        ret = {}
+        for key in dir(self):
+            if key.startswith("_"):
+                continue
+
+            if key in ['id', 'objects', 'pk', 'STRICT']:
+                continue
+
+            obj = getattr(self, key)
+            if callable(obj):
+                continue
+            ret[key] = obj
+        return ret
 
 
 class History(mongoengine.Document):
@@ -101,15 +116,29 @@ class MongoClient(object):
         """
         return History.objects(user=user).order_by('-created_at').first()
 
-    def create_new_user(self):
+    def create_new_user(self, **option):
         """Create new user.
 
         Return:
             ID (str): new user id
         """
-        u = User()
+        u = User(**option)
         u.save()
         return u
+
+    def get_user_attributes(self, user_id):
+        """Get user.
+
+        Args:
+            user_id (str): target user id
+
+        Return:
+            user (dict): User attributes dictionary. return None, case taget user doesn't exist.
+        """
+        user = User.objects(id=user_id).first()
+        if user is None:
+            return None
+        return user.to_dict()
 
     def save_history(self, request, scenario, user):
         """Save System Response History.

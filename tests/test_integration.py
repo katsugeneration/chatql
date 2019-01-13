@@ -4,6 +4,7 @@
 """System Integration Test."""
 import chatql
 import subprocess
+import json
 import os
 import time
 import shutil
@@ -133,3 +134,34 @@ class TestIntegration:
             variables={'request': 'nice to meet you', 'user': result.data['response']['user']['id']})
         eq_(result.errors, None)
         eq_(result.data['response']['text'], 'Hello! Again!')
+
+    def test_basic_access_create_user(self):
+        query = '''
+            mutation createUser($optionalArgs: String) {
+                createUser(optionalArgs: $optionalArgs) {
+                    user {
+                        id
+                        optionalArgs
+                    }
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={'engine': engine}, variables={"optionalArgs": json.dumps({"aaa": "aaa"})})
+        eq_(result.errors, None)
+        ok_(result.data['createUser']['user']['id'] is not None)
+        eq_(result.data['createUser']['user']['optionalArgs'], '{"aaa": "aaa"}')
+
+        query = '''
+            query getUser($id: ID!) {
+                user(id: $id) {
+                    id
+                    optionalArgs
+                }
+            }
+        '''
+        user_id = result.data['createUser']['user']['id']
+        result = chatql.schema.execute(query, context={'engine': engine}, variables={"id": user_id})
+        eq_(result.errors, None)
+        eq_(result.data['user']['id'], user_id)
+        eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')
+        

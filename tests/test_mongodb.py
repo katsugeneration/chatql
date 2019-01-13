@@ -168,6 +168,21 @@ class TestClient:
         u = self.client.create_new_user()
         eq_(u.id, User.objects().only('id').first().id)
 
+    def test_create_new_user_with_option(self):
+        u = self.client.create_new_user(**{"aaa": "aaa"})
+        eq_(u.id, User.objects().only('id').first().id)
+        eq_(u.aaa, "aaa")
+
+    def test_get_user_attributes(self):
+        u = self.client.create_new_user()
+        eq_(u.id, User.objects().only('id').first().id)
+        get_u = self.client.get_user_attributes(u.id)
+        eq_(get_u, {})
+
+    def test_get_user_attributes_is_none(self):
+        get_u = self.client.get_user_attributes("1" * 24)
+        eq_(get_u, None)
+
     def test_save_history(self):
         s = Scenario(response='bbb')
         u = User()

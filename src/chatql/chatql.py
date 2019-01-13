@@ -3,12 +3,20 @@
 # Licensed under the MIT License
 """GraphQL scheme define."""
 import graphene
+import json
 
 
 class User(graphene.ObjectType):
     """User Type."""
 
     id = graphene.ID()
+    optional_args = graphene.String()
+
+    def resolve_optional_args(self, info):
+        """User optional parameters resolver."""
+        engine = info.context['engine']
+        attributes = engine.get_user_attributes(self.id)
+        return json.dumps(attributes)
 
 
 class Response(graphene.ObjectType):
@@ -49,13 +57,21 @@ class Query(graphene.ObjectType):
 class CreateUser(graphene.Mutation):
     """Crete User Mutation."""
 
+    class Arguments:
+        """Mutation Arguments."""
+
+        optional_args = graphene.String()
+
     user = graphene.Field(lambda: User)
 
-    def mutate(self, info):
+    def mutate(self, info, optional_args=None):
         """Mutate function."""
         engine = info.context['engine']
-        id = engine.create_new_user()
-        user = User(id=id)
+        if optional_args is None:
+            id = engine.create_new_user()
+        else:
+            id = engine.create_new_user(**json.loads(optional_args))
+        user = User(id=id, optional_args=optional_args)
         return CreateUser(user=user)
 
 

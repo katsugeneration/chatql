@@ -21,8 +21,11 @@ class DummyDatabaseClient(object):
     def globals(self, user):
         return self._globals
 
-    def create_new_user(self):
+    def create_new_user(self, **option):
         return DummyUser(id="1")
+
+    def get_user_attributes(self, user_id):
+        return {"aaa": "aaa"}
 
     def save_history(self, request, scenario, user):
         self._history.append((request, scenario, user))
@@ -124,3 +127,13 @@ class TestEngine:
         client = DummyDatabaseClient()
         engine = DialogEngine(client)
         eq_(engine.create_new_user(), "1")
+
+    def test_create_new_user_with_option(self):
+        client = DummyDatabaseClient()
+        engine = DialogEngine(client)
+        eq_(engine.create_new_user(option={"aaa": "aaa"}), "1")
+
+    def test_get_user_attributes(self):
+        client = DummyDatabaseClient()
+        engine = DialogEngine(client)
+        eq_(engine.get_user_attributes("111"), {"aaa": "aaa"})

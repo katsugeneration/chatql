@@ -44,10 +44,21 @@ class DialogEngine(object):
                 return self._client.save_history(request, s, user)
         return self._client.save_history(request, None, user)
 
-    def create_new_user(self):
+    def create_new_user(self, **option):
         """Create new user.
 
         Return:
             ID (str): new user id
         """
-        return self._client.create_new_user().id
+        return self._client.create_new_user(**option).id
+
+    def get_user_attributes(self, user_id):
+        """Get user.
+
+        Args:
+            user_id (str): target user id
+
+        Return:
+            user (dict): User attributes dictionary. return None, case taget user doesn't exist.
+        """
+        return self._client.get_user_attributes(user_id)
