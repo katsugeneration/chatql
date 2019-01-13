@@ -35,7 +35,10 @@ class Query(graphene.ObjectType):
                     Response,
                     request=graphene.String(required=True),
                     user=graphene.ID())
-    user = graphene.Field(User, id=graphene.ID(required=True))
+    user = graphene.Field(
+                    User,
+                    id=graphene.ID(),
+                    optional_args=graphene.String())
 
     def resolve_response(self, info, request=None, user=None):
         """Request param resolver."""
@@ -49,9 +52,12 @@ class Query(graphene.ObjectType):
             user=User(id=res_history.user.id),
             text=res_history.scenario['response'])
 
-    def resolve_user(self, info, id=None):
+    def resolve_user(self, info, id=None, optional_args=None):
         """User param resolver."""
-        return User(id=id)
+        if id is None:
+            engine = info.context['engine']
+            id = engine.get_user_id(**json.loads(optional_args))
+        return User(id=id, optional_args=optional_args)
 
 
 class CreateUser(graphene.Mutation):

@@ -183,6 +183,16 @@ class TestClient:
         get_u = self.client.get_user_attributes("1" * 24)
         eq_(get_u, None)
 
+    def test_get_user_id(self):
+        u = self.client.create_new_user(**{"aaa": "aaa"})
+        eq_(u.id, User.objects().only('id').first().id)
+        user_id = self.client.get_user_id(**{"aaa": "aaa"})
+        eq_(user_id, u.id)
+
+    def test_get_user_id_is_none(self):
+        user_id = self.client.get_user_id(**{"aaa": "aaa"})
+        eq_(user_id, None)
+
     def test_save_history(self):
         s = Scenario(response='bbb')
         u = User()

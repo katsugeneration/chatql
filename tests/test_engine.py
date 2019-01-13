@@ -27,6 +27,9 @@ class DummyDatabaseClient(object):
     def get_user_attributes(self, user_id):
         return {"aaa": "aaa"}
 
+    def get_user_id(self, **attributes):
+        return "1"
+
     def save_history(self, request, scenario, user):
         self._history.append((request, scenario, user))
         return DummyHistory(id='', request=request, scenario=scenario, user=user)
@@ -137,3 +140,8 @@ class TestEngine:
         client = DummyDatabaseClient()
         engine = DialogEngine(client)
         eq_(engine.get_user_attributes("111"), {"aaa": "aaa"})
+
+    def test_get_user_id(self):
+        client = DummyDatabaseClient()
+        engine = DialogEngine(client)
+        eq_(engine.get_user_id(**{"aaa": "aaa"}), "1")

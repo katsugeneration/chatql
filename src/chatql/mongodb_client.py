@@ -6,7 +6,6 @@ import mongoengine
 import datetime
 import json
 import functools
-import types
 
 
 class Scenario(mongoengine.Document):
@@ -127,7 +126,7 @@ class MongoClient(object):
         return u
 
     def get_user_attributes(self, user_id):
-        """Get user.
+        """Get user attributes.
 
         Args:
             user_id (str): target user id
@@ -139,6 +138,20 @@ class MongoClient(object):
         if user is None:
             return None
         return user.to_dict()
+
+    def get_user_id(self, **attributes):
+        """Get user id.
+
+        Args:
+            atrributes (dict): target user attributes
+
+        Return:
+            ID (string): User id. return None, case taget user doesn't exist.
+        """
+        user = User.objects(**attributes).first()
+        if user is None:
+            return None
+        return user.id
 
     def save_history(self, request, scenario, user):
         """Save System Response History.

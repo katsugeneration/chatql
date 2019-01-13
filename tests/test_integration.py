@@ -164,4 +164,33 @@ class TestIntegration:
         eq_(result.errors, None)
         eq_(result.data['user']['id'], user_id)
         eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')
-        
+
+    def test_basic_access_gte_user_with_attributes(self):
+        query = '''
+            mutation createUser($optionalArgs: String) {
+                createUser(optionalArgs: $optionalArgs) {
+                    user {
+                        id
+                        optionalArgs
+                    }
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={'engine': engine}, variables={"optionalArgs": json.dumps({"aaa": "aaa"})})
+        eq_(result.errors, None)
+        ok_(result.data['createUser']['user']['id'] is not None)
+        eq_(result.data['createUser']['user']['optionalArgs'], '{"aaa": "aaa"}')
+
+        query = '''
+            query getUser($optionalArgs: String) {
+                user(optionalArgs: $optionalArgs) {
+                    id
+                    optionalArgs
+                }
+            }
+        '''
+        user_id = result.data['createUser']['user']['id']
+        result = chatql.schema.execute(query, context={'engine': engine}, variables={"optionalArgs": json.dumps({"aaa": "aaa"})})
+        eq_(result.errors, None)
+        eq_(result.data['user']['id'], user_id)
+        eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')

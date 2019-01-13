@@ -35,6 +35,9 @@ class DummyEngine:
     def get_user_attributes(self, user_id):
         return {"aaa": "aaa"}
 
+    def get_user_id(self, **attributes):
+        return "444"
+
 
 class TestQL:
     def test_response_hello(self):
@@ -142,6 +145,20 @@ class TestQL:
         result = chatql.schema.execute(query, context={'engine': DummyEngine()}, variables={"id": "222"})
         eq_(result.errors, None)
         eq_(result.data['user']['id'], "222")
+        eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')
+
+    def test_get_user_without_id(self):
+        query = '''
+            query getUser($optionalArgs: String) {
+                user(optionalArgs: $optionalArgs) {
+                    id
+                    optionalArgs
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={'engine': DummyEngine()}, variables={"optionalArgs": json.dumps({"aaa": "aaa"})})
+        eq_(result.errors, None)
+        eq_(result.data['user']['id'], "444")
         eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')
 
     def test_response_hello_with_user(self):

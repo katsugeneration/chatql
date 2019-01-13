@@ -47,6 +47,9 @@ class DialogEngine(object):
     def create_new_user(self, **option):
         """Create new user.
 
+        Args:
+            option (sict): Optional attributes dictionary
+
         Return:
             ID (str): new user id
         """
@@ -62,3 +65,14 @@ class DialogEngine(object):
             user (dict): User attributes dictionary. return None, case taget user doesn't exist.
         """
         return self._client.get_user_attributes(user_id)
+
+    def get_user_id(self, **attributes):
+        """Get user id.
+
+        Args:
+            atrributes (dict): target user attributes
+
+        Return:
+            ID (string): User id. return None, case taget user doesn't exist.
+        """
+        return self._client.get_user_id(**attributes)
