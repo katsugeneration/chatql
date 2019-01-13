@@ -165,7 +165,7 @@ class TestIntegration:
         eq_(result.data['user']['id'], user_id)
         eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')
 
-    def test_basic_access_gte_user_with_attributes(self):
+    def test_basic_access_get_user_with_attributes(self):
         query = '''
             mutation createUser($optionalArgs: String) {
                 createUser(optionalArgs: $optionalArgs) {
@@ -194,3 +194,16 @@ class TestIntegration:
         eq_(result.errors, None)
         eq_(result.data['user']['id'], user_id)
         eq_(result.data['user']['optionalArgs'], '{"aaa": "aaa"}')
+
+    def test_basic_access_get_user_is_none(self):
+        query = '''
+            query getUser($optionalArgs: String) {
+                user(optionalArgs: $optionalArgs) {
+                    id
+                    optionalArgs
+                }
+            }
+        '''
+        result = chatql.schema.execute(query, context={'engine': engine}, variables={"optionalArgs": json.dumps({"aaa": "aaa"})})
+        eq_(result.errors, None)
+        eq_(result.data['user']['id'], None)

@@ -12,12 +12,6 @@ class User(graphene.ObjectType):
     id = graphene.ID()
     optional_args = graphene.String()
 
-    def resolve_optional_args(self, info):
-        """User optional parameters resolver."""
-        engine = info.context['engine']
-        attributes = engine.get_user_attributes(self.id)
-        return json.dumps(attributes)
-
 
 class Response(graphene.ObjectType):
     """System Response Type."""
@@ -57,6 +51,14 @@ class Query(graphene.ObjectType):
         if id is None:
             engine = info.context['engine']
             id = engine.get_user_id(**json.loads(optional_args))
+            if id is None:
+                return User()
+
+        if optional_args is None:
+            engine = info.context['engine']
+            attributes = engine.get_user_attributes(id)
+            optional_args = json.dumps(attributes)
+
         return User(id=id, optional_args=optional_args)
 
 
