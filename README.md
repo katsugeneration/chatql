@@ -19,7 +19,7 @@ After, you can access GraphQL interface `POST localhost:8080/graphql`.
 
 Please check response by GraphQL tool (ex: [GraphiQL](https://electronjs.org/apps/graphiql)).
 ```
-docker build ./demo -t chatql --force-rm=true
+docker build ./demo -t chatql
 docker run -p 8080:5000 -it chatql
 ```
 
