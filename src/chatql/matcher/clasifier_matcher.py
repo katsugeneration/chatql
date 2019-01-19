@@ -52,7 +52,7 @@ class InputExample(object):
     """A single training/test example for simple sequence classification."""
 
     def __init__(self, guid, text_a, text_b=None, label=None):
-        """Constructs a InputExample.
+        """Construct a InputExample.
 
         Args:
             guid: Unique id for the example.
@@ -91,6 +91,7 @@ class InputFeatures(object):
                  segment_ids,
                  label_id,
                  is_real_example=True):
+        """Single set of features of data."""
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
@@ -102,24 +103,24 @@ class DataProcessor(object):
     """Base class for data converters for sequence classification data sets."""
 
     def get_train_examples(self, data_dir):
-        """Gets a collection of `InputExample`s for the train set."""
+        """Get a collection of `InputExample`s for the train set."""
         raise NotImplementedError()
 
     def get_dev_examples(self, data_dir):
-        """Gets a collection of `InputExample`s for the dev set."""
+        """Get a collection of `InputExample`s for the dev set."""
         raise NotImplementedError()
 
     def get_test_examples(self, data_dir):
-        """Gets a collection of `InputExample`s for prediction."""
+        """Get a collection of `InputExample`s for prediction."""
         raise NotImplementedError()
 
     def get_labels(self):
-        """Gets the list of labels for this data set."""
+        """Get the list of labels for this data set."""
         raise NotImplementedError()
 
     @classmethod
     def _read_tsv(cls, input_file, quotechar=None):
-        """Reads a tab separated value file."""
+        """Read a tab separated value file."""
         with tf.gfile.Open(input_file, "r") as f:
             reader = csv.reader(f, delimiter="\t", quotechar=quotechar)
             lines = []
@@ -132,6 +133,7 @@ class XnliProcessor(DataProcessor):
     """Processor for the XNLI data set."""
 
     def __init__(self):
+        """Processor for the XNLI data set."""
         self.language = "zh"
 
     def get_train_examples(self, data_dir):
@@ -200,7 +202,7 @@ class MnliProcessor(DataProcessor):
         return ["contradiction", "entailment", "neutral"]
 
     def _create_examples(self, lines, set_type):
-        """Creates examples for the training and dev sets."""
+        """Create examples for the training and dev sets."""
         examples = []
         for (i, line) in enumerate(lines):
             if i == 0:
@@ -240,7 +242,7 @@ class MrpcProcessor(DataProcessor):
         return ["0", "1"]
 
     def _create_examples(self, lines, set_type):
-        """Creates examples for the training and dev sets."""
+        """Create examples for the training and dev sets."""
         examples = []
         for (i, line) in enumerate(lines):
             if i == 0:
@@ -280,7 +282,7 @@ class ColaProcessor(DataProcessor):
         return ["0", "1"]
 
     def _create_examples(self, lines, set_type):
-        """Creates examples for the training and dev sets."""
+        """Create examples for the training and dev sets."""
         examples = []
         for (i, line) in enumerate(lines):
             # Only the test set has a header
@@ -299,8 +301,7 @@ class ColaProcessor(DataProcessor):
 
 
 def convert_single_example(ex_index, example, label_list, max_seq_length, tokenizer):
-    """Converts a single `InputExample` into a single `InputFeatures`."""
-
+    """Convert a single `InputExample` into a single `InputFeatures`."""
     if isinstance(example, PaddingInputExample):
         return InputFeatures(
                 input_ids=[0] * max_seq_length,
@@ -402,7 +403,6 @@ def convert_single_example(ex_index, example, label_list, max_seq_length, tokeni
 def file_based_convert_examples_to_features(
         examples, label_list, max_seq_length, tokenizer, output_file):
     """Convert a set of `InputExample`s to a TFRecord file."""
-
     writer = tf.python_io.TFRecordWriter(output_file)
 
     for (ex_index, example) in enumerate(examples):
@@ -429,8 +429,7 @@ def file_based_convert_examples_to_features(
 
 
 def file_based_input_fn_builder(input_file, seq_length, is_training, drop_remainder):
-    """Creates an `input_fn` closure to be passed to TPUEstimator."""
-
+    """Create an `input_fn` closure to be passed to TPUEstimator."""
     name_to_features = {
             "input_ids": tf.FixedLenFeature([seq_length], tf.int64),
             "input_mask": tf.FixedLenFeature([seq_length], tf.int64),
@@ -440,7 +439,7 @@ def file_based_input_fn_builder(input_file, seq_length, is_training, drop_remain
     }
 
     def _decode_record(record, name_to_features):
-        """Decodes a record to a TensorFlow example."""
+        """Decode a record to a TensorFlow example."""
         example = tf.parse_single_example(record, name_to_features)
 
         # tf.Example only supports tf.int64, but the TPU only supports tf.int32.
@@ -454,7 +453,7 @@ def file_based_input_fn_builder(input_file, seq_length, is_training, drop_remain
         return example
 
     def input_fn(params):
-        """The actual input function."""
+        """Actual input function."""
         batch_size = params["batch_size"]
 
         # For training, we want a lot of parallel reading and shuffling.
@@ -476,8 +475,7 @@ def file_based_input_fn_builder(input_file, seq_length, is_training, drop_remain
 
 
 def _truncate_seq_pair(tokens_a, tokens_b, max_length):
-    """Truncates a sequence pair in place to the maximum length."""
-
+    """Truncate a sequence pair in place to the maximum length."""
     # This is a simple heuristic which will always truncate the longer sequence
     # one token at a time. This makes more sense than truncating an equal percent
     # of tokens from each, since if one sequence is very short then each token
@@ -494,7 +492,7 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
 
 def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
                  labels, num_labels, use_one_hot_embeddings):
-    """Creates a classification model."""
+    """Create a classification model."""
     model = modeling.BertModel(
             config=bert_config,
             is_training=is_training,
@@ -540,11 +538,9 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
 def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                      num_train_steps, num_warmup_steps, use_tpu,
                      use_one_hot_embeddings):
-    """Returns `model_fn` closure for TPUEstimator."""
-
+    """Return `model_fn` closure for TPUEstimator."""
     def model_fn(features, labels, mode, params):  # pylint: disable=unused-argument
-        """The `model_fn` for TPUEstimator."""
-
+        """Build `model_fn` for TPUEstimator."""
         tf.logging.info("*** Features ***")
         for name in sorted(features.keys()):
             tf.logging.info("  name = %s, shape = %s" % (name, features[name].shape))
@@ -629,8 +625,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 # This function is not used by this file but is still used by the Colab and
 # people who depend on it.
 def input_fn_builder(features, seq_length, is_training, drop_remainder):
-    """Creates an `input_fn` closure to be passed to TPUEstimator."""
-
+    """Create an `input_fn` closure to be passed to TPUEstimator."""
     all_input_ids = []
     all_input_mask = []
     all_segment_ids = []
@@ -643,7 +638,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         all_label_ids.append(feature.label_id)
 
     def input_fn(params):
-        """The actual input function."""
+        """Actual input function."""
         batch_size = params["batch_size"]
 
         num_examples = len(features)
@@ -680,7 +675,6 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
 # people who depend on it.
 def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer):
     """Convert a set of `InputExample`s to a list of `InputFeatures`."""
-
     features = []
     for (ex_index, example) in enumerate(examples):
         if ex_index % 10000 == 0:
@@ -692,7 +686,8 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
     return features
 
 
-def train(_):
+def train():
+    """Training BERT Classifier Model."""
     tf.logging.set_verbosity(tf.logging.INFO)
 
     processors = {
