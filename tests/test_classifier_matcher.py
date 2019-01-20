@@ -17,19 +17,25 @@ def test_download_model_file():
 
 class TestClassifierMatcher:
     def test_train(self):
-        chatql.matcher.classifier_train(
-            os.path.join(os.path.dirname(__file__), "classifier_test"),
-            "classifier_test_model")
+        matcher = chatql.matcher.ClassifierMatcher()
+        matcher.load_model(
+            "classifier_test_model",
+            ["0", "1"],
+            14
+        )
+        matcher.train(os.path.join(os.path.dirname(__file__), "classifier_test"))
         ok_(os.path.exists("classifier_test_model/checkpoint"))
         shutil.rmtree("classifier_test_model", ignore_errors=True)
 
     def test_predict(self):
-        model_dir = "classifier_test_model"
-        chatql.matcher.classifier_train(
-            os.path.join(os.path.dirname(__file__), "classifier_test"),
-            model_dir)
-
         matcher = chatql.matcher.ClassifierMatcher()
-        matcher.request = "いいえ、そうじゃありません。"
-        matcher.load_model(model_dir, ["0", "1"])
-        ok_(matcher(1))
+        matcher.load_model(
+            "classifier_test_model",
+            ["0", "1"],
+            14
+        )
+        matcher.train(os.path.join(os.path.dirname(__file__), "classifier_test"))
+        matcher.request = "それはやめましょう。"
+        ret = matcher(1)
+        shutil.rmtree("classifier_test_model", ignore_errors=True)
+        ok_(ret)

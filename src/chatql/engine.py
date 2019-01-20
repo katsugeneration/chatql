@@ -3,7 +3,7 @@
 # Licensed under the MIT License
 """Dialog Management Module."""
 import os
-from chatql.matcher import RegexMatcher, ClassifierMatcher, classifier_train
+from chatql.matcher import RegexMatcher, ClassifierMatcher
 
 
 class DialogEngine(object):
@@ -31,12 +31,17 @@ class DialogEngine(object):
         outputs = []
         for intent in intents:
             outputs.extend([[intent.name, i] for i in intent.intents])
+        label_list = sorted([str(i.name) for i in intents])
         with open(os.path.join(model_dir, "train.tsv"), 'w') as f:
             for o in outputs:
                 f.write(o[0] + "\t" + o[1] + "\n")
 
-        classifier_train(model_dir, model_dir)
-        self._classifier_matcher.load_model(model_dir, sorted([str(i.name) for i in intents]))
+        self._classifier_matcher.load_model(
+            model_dir,
+            label_list,
+            len(outputs)
+        )
+        self._classifier_matcher.train(model_dir)
 
     def generate_response_text(self, request, user=None, **context):
         """Generate Response Text using DB and Intent Estimator.

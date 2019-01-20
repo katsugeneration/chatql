@@ -594,96 +594,13 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
     return features
 
 
-def train(data_dir, output_dir):
-    """Training BERT Classifier Model."""
-    tf.logging.set_verbosity(tf.logging.INFO)
-
-    tokenization.validate_case_matches_checkpoint(False, init_checkpoint)
-
-    bert_config = modeling.BertConfig.from_json_file(bert_config_file)
-
-    if max_seq_length > bert_config.max_position_embeddings:
-        raise ValueError(
-                "Cannot use sequence length %d because the BERT model "
-                "was only trained up to sequence length %d" %
-                (max_seq_length, bert_config.max_position_embeddings))
-
-    tf.gfile.MakeDirs(output_dir)
-
-    processor = SimpleClassifierProcessor()
-
-    tokenizer = tokenization.FullTokenizer(
-            vocab_file=vocab_file, do_lower_case=False)
-
-    tpu_cluster_resolver = None
-    if use_tpu and tpu_name:
-        tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
-                tpu_name, zone=tpu_zone, project=gcp_project)
-
-    is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
-    run_config = tf.contrib.tpu.RunConfig(
-            cluster=tpu_cluster_resolver,
-            master=master,
-            model_dir=output_dir,
-            save_checkpoints_steps=save_checkpoints_steps,
-            keep_checkpoint_max=1,
-            tpu_config=tf.contrib.tpu.TPUConfig(
-                    iterations_per_loop=iterations_per_loop,
-                    num_shards=num_tpu_cores,
-                    per_host_input_for_training=is_per_host))
-
-    train_examples = None
-    num_train_steps = None
-    num_warmup_steps = None
-
-    train_examples = processor.get_train_examples(data_dir)
-    num_train_steps = int(
-            len(train_examples) / train_batch_size * num_train_epochs)
-    num_warmup_steps = int(num_train_steps * warmup_proportion)
-    label_list = processor.get_labels()
-
-    model_fn = model_fn_builder(
-            bert_config=bert_config,
-            num_labels=len(label_list),
-            init_checkpoint=init_checkpoint,
-            learning_rate=learning_rate,
-            num_train_steps=num_train_steps,
-            num_warmup_steps=num_warmup_steps,
-            use_tpu=use_tpu,
-            use_one_hot_embeddings=use_tpu)
-
-    # If TPU is not available, this will fall back to normal Estimator on CPU
-    # or GPU.
-    estimator = tf.contrib.tpu.TPUEstimator(
-            use_tpu=use_tpu,
-            model_fn=model_fn,
-            config=run_config,
-            train_batch_size=train_batch_size,
-            eval_batch_size=eval_batch_size,
-            predict_batch_size=predict_batch_size)
-
-    train_file = os.path.join(output_dir, "train.tf_record")
-    file_based_convert_examples_to_features(
-            train_examples, label_list, max_seq_length, tokenizer, train_file)
-    tf.logging.info("***** Running training *****")
-    tf.logging.info("  Num examples = %d", len(train_examples))
-    tf.logging.info("  Batch size = %d", train_batch_size)
-    tf.logging.info("  Num steps = %d", num_train_steps)
-    train_input_fn = file_based_input_fn_builder(
-            input_file=train_file,
-            seq_length=max_seq_length,
-            is_training=True,
-            drop_remainder=True)
-    estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
-
-
 class ClassifierMatcher(object):
     """Bert request matcher."""
 
     def __init__(self):
         """Classifier Matcher Constructor."""
         self._request = ''
-        self._data_dir = '/tmp/chatql/predict/'
+        self._data_dir = '/tmp/chatql/classifier/'
 
     @property
     def request(self):
@@ -698,12 +615,14 @@ class ClassifierMatcher(object):
         with open(os.path.join(self._data_dir, 'test.tsv'), 'w') as f:
             f.write("0\t" + request + "\n")
 
-    def load_model(self, model_dir, label_list):
+    def load_model(self, model_dir, label_list, num_train_examples=0, init_checkpoint=init_checkpoint):
         """Load pre-trained model.
 
         Args:
             model_dir (str): model file directory/
             label_list (List[str]): label number list.
+            num_train_examples (int): (Optional) train data num. In use training, must set this parameter.
+            init_checkpoint (str): (Optional) initial checkpoint path. Default is bert pre-trained model .
         """
         tf.logging.set_verbosity(tf.logging.WARN)
 
@@ -734,13 +653,16 @@ class ClassifierMatcher(object):
                         num_shards=num_tpu_cores,
                         per_host_input_for_training=is_per_host))
 
+        num_train_steps = int(num_train_examples / train_batch_size * num_train_epochs)
+        num_warmup_steps = int(num_train_steps * warmup_proportion)
+
         model_fn = model_fn_builder(
                 bert_config=bert_config,
                 num_labels=len(label_list),
                 init_checkpoint=init_checkpoint,
                 learning_rate=learning_rate,
-                num_train_steps=None,
-                num_warmup_steps=None,
+                num_train_steps=num_train_steps,
+                num_warmup_steps=num_warmup_steps,
                 use_tpu=use_tpu,
                 use_one_hot_embeddings=use_tpu)
 
@@ -755,11 +677,34 @@ class ClassifierMatcher(object):
                 predict_batch_size=predict_batch_size)
         self._label_list = label_list
 
+    def train(self, data_dir):
+        processor = SimpleClassifierProcessor()
+        tokenizer = tokenization.FullTokenizer(
+            vocab_file=vocab_file, do_lower_case=False)
+        train_examples = processor.get_train_examples(data_dir)
+        num_train_steps = int(
+                len(train_examples) / train_batch_size * num_train_epochs)
+
+        train_file = os.path.join(data_dir, "train.tf_record")
+        file_based_convert_examples_to_features(
+                train_examples, self._label_list, max_seq_length, tokenizer, train_file)
+        tf.logging.info("***** Running training *****")
+        tf.logging.info("  Num examples = %d", len(train_examples))
+        tf.logging.info("  Batch size = %d", train_batch_size)
+        tf.logging.info("  Num steps = %d", num_train_steps)
+        train_input_fn = file_based_input_fn_builder(
+                input_file=train_file,
+                seq_length=max_seq_length,
+                is_training=True,
+                drop_remainder=True)
+        self._estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
+        os.remove(train_file)
+
     def __call__(self, intent, threshold=0.6):
         """Match pretrained intent.
 
         Args:
-            intent (int): intent number.
+            intent (str): intent name.
         Return:
             result (bool): match result.
         """
