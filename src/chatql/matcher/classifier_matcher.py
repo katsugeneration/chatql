@@ -36,7 +36,7 @@ train_batch_size = 32
 eval_batch_size = 32
 predict_batch_size = 8
 learning_rate = 5e-5
-num_train_epochs = 3.0
+num_train_epochs = 10.0
 warmup_proportion = 0.1
 save_checkpoints_steps = 1000
 iterations_per_loop = 1000
@@ -675,3 +675,128 @@ def train(data_dir, output_dir):
             is_training=True,
             drop_remainder=True)
     estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
+
+
+class ClassifierMatcher(object):
+    """Bert request matcher."""
+
+    def __init__(self):
+        """Classifier Matcher Constructor."""
+        self._request = ''
+        self._data_dir = '/tmp/chatql/predict/'
+
+    @property
+    def request(self):
+        """Match Target Sentence."""
+        return self._request
+
+    @request.setter
+    def request(self, request):
+        self._request = request
+        if not os.path.exists(self._data_dir):
+            os.makedirs(self._data_dir)
+        with open(os.path.join(self._data_dir, 'test.tsv'), 'w') as f:
+            f.write("0\t" + request + "\n")
+
+    def load_model(self, model_dir, label_list):
+        """Load pre-trained model.
+
+        Args:
+            model_dir (str): model file directory/
+            label_list (List[str]): label number list.
+        """
+        tf.logging.set_verbosity(tf.logging.WARN)
+
+        tokenization.validate_case_matches_checkpoint(False, init_checkpoint)
+
+        bert_config = modeling.BertConfig.from_json_file(bert_config_file)
+
+        if max_seq_length > bert_config.max_position_embeddings:
+            raise ValueError(
+                    "Cannot use sequence length %d because the BERT model "
+                    "was only trained up to sequence length %d" %
+                    (max_seq_length, bert_config.max_position_embeddings))
+
+        tpu_cluster_resolver = None
+        if use_tpu and tpu_name:
+            tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
+                    tpu_name, zone=tpu_zone, project=gcp_project)
+
+        is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
+        run_config = tf.contrib.tpu.RunConfig(
+                cluster=tpu_cluster_resolver,
+                master=master,
+                model_dir=model_dir,
+                save_checkpoints_steps=save_checkpoints_steps,
+                keep_checkpoint_max=1,
+                tpu_config=tf.contrib.tpu.TPUConfig(
+                        iterations_per_loop=iterations_per_loop,
+                        num_shards=num_tpu_cores,
+                        per_host_input_for_training=is_per_host))
+
+        model_fn = model_fn_builder(
+                bert_config=bert_config,
+                num_labels=len(label_list),
+                init_checkpoint=init_checkpoint,
+                learning_rate=learning_rate,
+                num_train_steps=None,
+                num_warmup_steps=None,
+                use_tpu=use_tpu,
+                use_one_hot_embeddings=use_tpu)
+
+        # If TPU is not available, this will fall back to normal Estimator on CPU
+        # or GPU.
+        self._estimator = tf.contrib.tpu.TPUEstimator(
+                use_tpu=use_tpu,
+                model_fn=model_fn,
+                config=run_config,
+                train_batch_size=train_batch_size,
+                eval_batch_size=eval_batch_size,
+                predict_batch_size=predict_batch_size)
+        self._label_list = label_list
+
+    def __call__(self, intent, threshold=0.6):
+        """Match pretrained intent.
+
+        Args:
+            intent (int): intent number.
+        Return:
+            result (bool): match result.
+        """
+        tokenizer = tokenization.FullTokenizer(
+                vocab_file=vocab_file, do_lower_case=False)
+
+        processor = SimpleClassifierProcessor()
+        predict_examples = processor.get_test_examples(self._data_dir)
+        num_actual_predict_examples = len(predict_examples)
+
+        if use_tpu:
+            # TPU requires a fixed batch size for all batches, therefore the number
+            # of examples must be a multiple of the batch size, or else examples
+            # will get dropped. So we pad with fake examples which are ignored
+            # later on.
+            while len(predict_examples) % 1 != 0:
+                predict_examples.append(PaddingInputExample())
+
+        predict_file = "/tmp/chatql/predict.tf_record"
+        file_based_convert_examples_to_features(predict_examples, self._label_list,
+                                                max_seq_length, tokenizer,
+                                                predict_file)
+
+        tf.logging.info("***** Running prediction*****")
+        tf.logging.info("  Num examples = %d (%d actual, %d padding)",
+                        len(predict_examples), num_actual_predict_examples,
+                        len(predict_examples) - num_actual_predict_examples)
+        tf.logging.info("  Batch size = %d", predict_batch_size)
+
+        predict_drop_remainder = True if use_tpu else False
+        predict_input_fn = file_based_input_fn_builder(
+            input_file=predict_file,
+            seq_length=max_seq_length,
+            is_training=False,
+            drop_remainder=predict_drop_remainder)
+
+        result = self._estimator.predict(input_fn=predict_input_fn)
+        result = list(result)
+        os.remove(predict_file)
+        return (result[0]['probabilities'][intent] >= threshold)

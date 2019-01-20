@@ -22,3 +22,14 @@ class TestClassifierMatcher:
             "classifier_test_model")
         ok_(os.path.exists("classifier_test_model/checkpoint"))
         shutil.rmtree("classifier_test_model", ignore_errors=True)
+
+    def test_predict(self):
+        model_dir = "classifier_test_model"
+        chatql.matcher.classifier_train(
+            os.path.join(os.path.dirname(__file__), "classifier_test"),
+            model_dir)
+
+        matcher = chatql.matcher.ClassifierMatcher()
+        matcher.request = "いいえ、そうじゃありません。"
+        matcher.load_model(model_dir, ["0", "1"])
+        ok_(matcher(1))
