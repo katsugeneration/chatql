@@ -12,6 +12,7 @@ graphene = "^2.1"
 mongoengine = "^0.16.3"
 flask = {version = "^1.0",extras = ["server"]}
 line-bot-sdk = {version = "^1.8",extras = ["line"]}
+tensorflow = "^1.12"
 
 [tool.poetry.dev-dependencies]
 pytest = "^3.0"
