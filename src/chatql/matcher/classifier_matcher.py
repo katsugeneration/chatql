@@ -24,9 +24,8 @@ from tqdm import tqdm
 from chatql.matcher.bert import modeling, optimization, tokenization
 import tensorflow as tf
 
-
 # Required parameters
-bert_pretrained_model_dir = Path(Path(__file__).parent, "bert_pretrained_model")
+bert_pretrained_model_dir = Path("/tmp/chatql/bert_pretrained_model")
 data_dir = None
 output_dir = None
 bert_config_file = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768_A-12/bert_config.json"))
@@ -44,7 +43,7 @@ warmup_proportion = 0.1
 save_checkpoints_steps = 1000
 iterations_per_loop = 1000
 
-# TPU COnfiguration
+# TPU Configuration
 use_tpu = False
 tpu_name = None
 tpu_zone = None
@@ -62,7 +61,7 @@ if not bert_pretrained_model_dir.exists():
         if response.status != 200:
             raise Exception('pretrained model file does not download!')
 
-        bert_pretrained_model_dir.mkdir()
+        bert_pretrained_model_dir.mkdir(parents=True)
         model_file: Path = bert_pretrained_model_dir.joinpath('model.zip')
         with model_file.open('wb') as f:
             total_size = int(response.headers['content-length'])
@@ -80,8 +79,9 @@ if not bert_pretrained_model_dir.exists():
             str(model_file),
             extract_dir=str(bert_pretrained_model_dir),
             format="zip")
-    except:  # noqa: E722
+    except Exception as e:
         shutil.rmtree(str(bert_pretrained_model_dir), ignore_errors=True)
+        raise e
 
 
 class InputExample(object):
