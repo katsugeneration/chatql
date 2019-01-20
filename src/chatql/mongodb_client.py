@@ -60,6 +60,20 @@ class History(mongoengine.Document):
     created_at = mongoengine.DateTimeField(default=datetime.datetime.utcnow)
 
 
+class Intent(mongoengine.Document):
+    """User Input Intent Class."""
+
+    intents = mongoengine.ListField()
+    type = mongoengine.StringField()
+    created_at = mongoengine.DateTimeField(default=datetime.datetime.utcnow)
+    modified_at = mongoengine.DateTimeField(default=datetime.datetime.utcnow)
+
+    def save(self, *args, **kwargs):
+        """Override save method for updating modefied datetime."""
+        self.modified_at = datetime.datetime.utcnow()
+        return super().save(*args, **kwargs)
+
+
 class MongoClient(object):
     """MongoDb Client Object."""
 

@@ -2,7 +2,7 @@
 #
 # Licensed under the MIT License
 """Mongodb client test code."""
-from chatql.mongodb_client import MongoClient, Scenario, User, History
+from chatql.mongodb_client import MongoClient, Scenario, User, History, Intent
 import datetime
 import mongoengine
 import os
@@ -37,6 +37,7 @@ class TestClient:
         Scenario.objects().delete()
         User.objects().delete()
         History.objects().delete()
+        Intent.objects().delete()
 
     def test_add_scenario(self):
         s = Scenario()
@@ -125,6 +126,30 @@ class TestClient:
         h.user = u
         u.save()
         h.save()
+
+    def test_add_intent(self):
+        i = Intent(intents=["おはよう", "おっはー"], type="classifier")
+        i.save()
+        eq_(i.id, Intent.objects().only('id').first().id)
+
+    def test_add_intent_check_created_at(self):
+        i = Intent(intents=["おはよう", "おっはー"], type="classifier")
+        i.save()
+        utc = datetime.datetime.utcnow()
+        ok_(utc >= i.created_at >= utc - datetime.timedelta(seconds=1))
+        ok_(utc >= i.modified_at >= utc - datetime.timedelta(seconds=1))
+
+    def test_add_intent_update_modified(self):
+        i = Intent(intents=["おはよう", "おっはー"], type="classifier")
+        i.save()
+        utc = datetime.datetime.utcnow()
+        __import__("time").sleep(1)
+        i.intents.append("おはおは")
+        i.save()
+        utc_modified = datetime.datetime.utcnow()
+        eq_(i.intents, ["おはよう", "おっはー", "おはおは"])
+        ok_(utc >= i.created_at >= utc - datetime.timedelta(seconds=1))
+        ok_(utc_modified >= i.modified_at >= utc_modified - datetime.timedelta(seconds=1))
 
     def test_client_globals_history(self):
         u = User()
