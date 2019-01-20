@@ -34,7 +34,7 @@ init_checkpoint = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768
 max_seq_length = 128
 train_batch_size = 32
 eval_batch_size = 32
-predict_batch_size = 8
+predict_batch_size = 1
 learning_rate = 5e-5
 num_train_epochs = 10.0
 warmup_proportion = 0.1
@@ -600,20 +600,6 @@ class ClassifierMatcher(object):
     def __init__(self):
         """Classifier Matcher Constructor."""
         self._request = ''
-        self._data_dir = '/tmp/chatql/classifier/'
-
-    @property
-    def request(self):
-        """Match Target Sentence."""
-        return self._request
-
-    @request.setter
-    def request(self, request):
-        self._request = request
-        if not os.path.exists(self._data_dir):
-            os.makedirs(self._data_dir)
-        with open(os.path.join(self._data_dir, 'test.tsv'), 'w') as f:
-            f.write("0\t" + request + "\n")
 
     def load_model(self, model_dir, label_list, num_train_examples=0, init_checkpoint=init_checkpoint):
         """Load pre-trained model.
@@ -624,7 +610,7 @@ class ClassifierMatcher(object):
             num_train_examples (int): (Optional) train data num. In use training, must set this parameter.
             init_checkpoint (str): (Optional) initial checkpoint path. Default is bert pre-trained model .
         """
-        tf.logging.set_verbosity(tf.logging.WARN)
+        tf.logging.set_verbosity(tf.logging.INFO)
 
         tokenization.validate_case_matches_checkpoint(False, init_checkpoint)
 
@@ -700,48 +686,38 @@ class ClassifierMatcher(object):
         self._estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
         os.remove(train_file)
 
-    def __call__(self, intent, threshold=0.6):
+    def __call__(self, request, intent, threshold=0.6):
         """Match pretrained intent.
 
         Args:
+            request (str): estimate target seenten.
             intent (str): intent name.
+            threshold (float): estimate threshold value.
         Return:
             result (bool): match result.
         """
         tokenizer = tokenization.FullTokenizer(
                 vocab_file=vocab_file, do_lower_case=False)
 
-        processor = SimpleClassifierProcessor()
-        predict_examples = processor.get_test_examples(self._data_dir)
-        num_actual_predict_examples = len(predict_examples)
+        feature = convert_single_example(0,
+                                         InputExample(guid="test-0", text_a=request, label="0"),
+                                         self._label_list, max_seq_length, tokenizer)
 
-        if use_tpu:
-            # TPU requires a fixed batch size for all batches, therefore the number
-            # of examples must be a multiple of the batch size, or else examples
-            # will get dropped. So we pad with fake examples which are ignored
-            # later on.
-            while len(predict_examples) % 1 != 0:
-                predict_examples.append(PaddingInputExample())
-
-        predict_file = "/tmp/chatql/predict.tf_record"
-        file_based_convert_examples_to_features(predict_examples, self._label_list,
-                                                max_seq_length, tokenizer,
-                                                predict_file)
+        features = collections.OrderedDict()
+        features["input_ids"] = [feature.input_ids]
+        features["input_mask"] = [feature.input_mask]
+        features["segment_ids"] = [feature.segment_ids]
+        features["label_ids"] = [feature.label_id]
+        features["is_real_example"] = [int(feature.is_real_example)]
 
         tf.logging.info("***** Running prediction*****")
-        tf.logging.info("  Num examples = %d (%d actual, %d padding)",
-                        len(predict_examples), num_actual_predict_examples,
-                        len(predict_examples) - num_actual_predict_examples)
         tf.logging.info("  Batch size = %d", predict_batch_size)
 
-        predict_drop_remainder = True if use_tpu else False
-        predict_input_fn = file_based_input_fn_builder(
-            input_file=predict_file,
-            seq_length=max_seq_length,
-            is_training=False,
-            drop_remainder=predict_drop_remainder)
+        def predict_input_fn(params):
+            """An input function for prediction"""
+            dataset = tf.data.Dataset.from_tensor_slices((dict(features), [0]))
+            return dataset.batch(params["batch_size"])
 
         result = self._estimator.predict(input_fn=predict_input_fn)
         result = list(result)
-        os.remove(predict_file)
         return (result[0]['probabilities'][intent] >= threshold)

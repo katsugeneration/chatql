@@ -35,7 +35,6 @@ class TestClassifierMatcher:
             14
         )
         matcher.train(os.path.join(os.path.dirname(__file__), "classifier_test"))
-        matcher.request = "それはやめましょう。"
-        ret = matcher(1)
+        ret = matcher("それはやめましょう。", 1)
         shutil.rmtree("classifier_test_model", ignore_errors=True)
         ok_(ret)
