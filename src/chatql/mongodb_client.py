@@ -64,6 +64,7 @@ class Intent(mongoengine.Document):
     """User Input Intent Class."""
 
     intents = mongoengine.ListField()
+    name = mongoengine.StringField()
     type = mongoengine.StringField()
     created_at = mongoengine.DateTimeField(default=datetime.datetime.utcnow)
     modified_at = mongoengine.DateTimeField(default=datetime.datetime.utcnow)

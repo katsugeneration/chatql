@@ -128,7 +128,7 @@ class TestClient:
         h.save()
 
     def test_add_intent(self):
-        i = Intent(intents=["おはよう", "おっはー"], type="classifier")
+        i = Intent(intents=["おはよう", "おっはー"], type="classifier", name="goodmorning")
         i.save()
         eq_(i.id, Intent.objects().only('id').first().id)
 
