@@ -183,6 +183,17 @@ class MongoClient(object):
         h.save()
         return h
 
+    def get_intent(self, intent_type=None):
+        """Get intent list.
+
+        Args:
+            intent_type (str): target intent type
+
+        Return:
+            intent_list (List[str]): specific type intent list
+        """
+        return list(Intent.objects(type=intent_type))
+
     def import_scenario(self, path):
         """Import scenario data in DB.
 

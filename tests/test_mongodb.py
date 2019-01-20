@@ -306,3 +306,13 @@ class TestClient:
         s = Scenario(attributes={'id': '111'}, response='bbb')
         s.save()
         eq_(None, self.client.globals(u.id)['last_history']())
+
+    def test_get_intent(self):
+        i = Intent(intents=["おはよう", "おっはー"], type="classifier")
+        i.save()
+        i = Intent(intents=["こんにちは", "こんちっわーす"], type="classifier")
+        i.save()
+        i = Intent(intents=["(.*?)おは(.*?)"], type="regex")
+        i.save()
+        intents = self.client.get_intent(intent_type="classifier")
+        eq_(2, len(intents))
