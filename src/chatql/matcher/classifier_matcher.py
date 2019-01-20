@@ -26,8 +26,6 @@ import tensorflow as tf
 
 # Required parameters
 bert_pretrained_model_dir = Path("/tmp/chatql/bert_pretrained_model")
-data_dir = None
-output_dir = None
 bert_config_file = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768_A-12/bert_config.json"))
 vocab_file = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768_A-12/vocab.txt"))
 init_checkpoint = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768_A-12/bert_model.ckpt"))
@@ -596,7 +594,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
     return features
 
 
-def train():
+def train(data_dir, output_dir):
     """Training BERT Classifier Model."""
     tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -628,6 +626,7 @@ def train():
             master=master,
             model_dir=output_dir,
             save_checkpoints_steps=save_checkpoints_steps,
+            keep_checkpoint_max=1,
             tpu_config=tf.contrib.tpu.TPUConfig(
                     iterations_per_loop=iterations_per_loop,
                     num_shards=num_tpu_cores,
