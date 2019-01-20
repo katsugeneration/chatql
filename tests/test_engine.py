@@ -5,11 +5,13 @@
 from chatql.engine import DialogEngine
 from nose.tools import eq_, ok_
 from collections import namedtuple
+import shutil
 
 
 DummyScenario = namedtuple('DummyScenario', 'conditions response attributes')
 DummyUser = namedtuple('DummyUser', 'id')
 DummyHistory = namedtuple('DummyHistory', 'id user scenario request')
+DummyIntent = namedtuple('DummyIntent', 'intents name type')
 
 
 class DummyDatabaseClient(object):
@@ -29,6 +31,12 @@ class DummyDatabaseClient(object):
 
     def get_user_id(self, **attributes):
         return "1"
+
+    def get_intent(self, intent_type=None):
+        return [
+                DummyIntent(intents=["おはよう", "おっはー"], name="goodmorning", type="classifier"),
+                DummyIntent(intents=["こんにちは", "こんちっわーす"], name="hello", type="classifier")
+            ]
 
     def save_history(self, request, scenario, user):
         self._history.append((request, scenario, user))
@@ -145,3 +153,9 @@ class TestEngine:
         client = DummyDatabaseClient()
         engine = DialogEngine(client)
         eq_(engine.get_user_id(**{"aaa": "aaa"}), "1")
+
+    def test_train_matcher(self):
+        client = DummyDatabaseClient()
+        engine = DialogEngine(client)
+        engine.train_matcher("classifier_test_model")
+        shutil.rmtree("classifier_test_model", ignore_errors=True)

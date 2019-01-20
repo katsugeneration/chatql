@@ -188,7 +188,7 @@ class SimpleClassifierProcessor(DataProcessor):
 
     def get_labels(self):
         """See base class."""
-        return [str(a) for a in range(max([int(l) for l in self._labels]) + 1)]
+        return sorted([str(l) for l in self._labels])
 
     def _create_examples(self, lines, set_type):
         """Create examples for the training and dev sets."""

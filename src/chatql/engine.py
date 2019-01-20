@@ -2,7 +2,8 @@
 #
 # Licensed under the MIT License
 """Dialog Management Module."""
-from chatql.matcher import RegexMatcher
+import os
+from chatql.matcher import RegexMatcher, ClassifierMatcher, classifier_train
 
 
 class DialogEngine(object):
@@ -15,6 +16,27 @@ class DialogEngine(object):
             client (object): Database access client instance.
         """
         self._client = client
+        self._classifier_matcher = ClassifierMatcher()
+
+    def train_matcher(self, model_dir):
+        """Train matcher.
+
+        Args:
+            model_dir: model saved directory path.
+        """
+        if not os.path.exists(model_dir):
+            os.makedirs(model_dir)
+
+        intents = self._client.get_intent(intent_type='classifier')
+        outputs = []
+        for intent in intents:
+            outputs.extend([[intent.name, i] for i in intent.intents])
+        with open(os.path.join(model_dir, "train.tsv"), 'w') as f:
+            for o in outputs:
+                f.write(o[0] + "\t" + o[1] + "\n")
+
+        classifier_train(model_dir, model_dir)
+        self._classifier_matcher.load_model(model_dir, sorted([str(i.name) for i in intents]))
 
     def generate_response_text(self, request, user=None, **context):
         """Generate Response Text using DB and Intent Estimator.
