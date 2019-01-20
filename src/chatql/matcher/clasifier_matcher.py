@@ -17,16 +17,21 @@
 import collections
 import csv
 import os
+import shutil
+import urllib
+from pathlib import Path
+from tqdm import tqdm
 from chatql.matcher.bert import modeling, optimization, tokenization
 import tensorflow as tf
 
 
 # Required parameters
+bert_pretrained_model_dir = Path(Path(__file__).parent, "bert_pretrained_model")
 data_dir = None
-bert_config_file = None
-vocab_file = None
 output_dir = None
-init_checkpoint = None
+bert_config_file = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768_A-12/bert_config.json"))
+vocab_file = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768_A-12/vocab.txt"))
+init_checkpoint = str(bert_pretrained_model_dir.joinpath("multi_cased_L-12_H-768_A-12/bert_model.ckpt"))
 
 # Other parameters
 max_seq_length = 128
@@ -46,6 +51,37 @@ tpu_zone = None
 gcp_project = None
 master = None
 num_tpu_cores = 8
+
+
+# Download pretrained model
+if not bert_pretrained_model_dir.exists():
+    pretrained_model_url = "https://storage.googleapis.com/bert_models/2018_11_23/multi_cased_L-12_H-768_A-12.zip"
+
+    try:
+        response = urllib.request.urlopen(pretrained_model_url, timeout=10)
+        if response.status != 200:
+            raise Exception('pretrained model file does not download!')
+
+        bert_pretrained_model_dir.mkdir()
+        model_file: Path = bert_pretrained_model_dir.joinpath('model.zip')
+        with model_file.open('wb') as f:
+            total_size = int(response.headers['content-length'])
+            pbar = tqdm(total=total_size, unit="B", unit_scale=True)
+            while not response.closed:
+                chunck = response.read(102400)
+                if not chunck:
+                    break
+                f.write(chunck)
+                pbar.update(len(chunck))
+            pbar.close()
+        response.close()
+
+        shutil.unpack_archive(
+            str(model_file),
+            extract_dir=str(bert_pretrained_model_dir),
+            format="zip")
+    except:  # noqa: E722
+        shutil.rmtree(str(bert_pretrained_model_dir), ignore_errors=True)
 
 
 class InputExample(object):
@@ -640,4 +676,3 @@ def train():
             is_training=True,
             drop_remainder=True)
     estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
-
